@@ -1,0 +1,46 @@
+/* styles.css */
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    text-align: left;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+    color: #333333;
+}
+
+.container {
+    margin-top: 50px;
+}
+
+#clicker-button {
+    font-size: 20px;
+    padding: 10px 20px;
+    position: center;
+    cursor: pointer;
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin: 30px;
+    transition: transform 0.1s ease, background-color 0.1s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#clicker-button:hover {
+    background-color: #007ab8;
+}
+
+#clicker-button:active {
+    transform: scale(0.95);
+    background-color: #006ba1;
+}
+
+#click-count {
+    font-weight: bold;
+    font-size: 24px;
+    margin-top: 20px;
+}
+
+h1 {
+    color: #0088cc;
+}
