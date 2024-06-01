@@ -315,4 +315,7 @@ function checkTaskCompletion(taskId, currentProgress) {
     });
 });
 }
+else{ //иначе
+    tg.MainButton.show() //показываем 
+}
 }
