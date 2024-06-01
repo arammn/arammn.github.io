@@ -150,32 +150,46 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 }
 
-    // Проверка времени отсутствия пользователя при загрузке страницы
-// Проверка времени отсутствия пользователя при загрузке страницы
-function checkOfflineTime() {
+   // Проверка времени отсутствия пользователя и выдача TPC
+function calculateOfflineEarnings() {
     const lastExitTime = localStorage.getItem('lastExitTime');
     if (lastExitTime) {
         const currentTime = Date.now();
         const elapsedTime = (currentTime - parseInt(lastExitTime)) / 1000; // в секундах
         const maxOfflineTime = 3 * 60 * 60; // 3 часа в секундах
 
-        if (elapsedTime >= maxOfflineTime) {
-            // Если прошло более 3 часов, вычисляем заработок, но не включаем автокликер
-            const earnings = Math.floor(maxOfflineTime) * clickValue;
-            tpcCount += earnings;
-            updateCoins();
-        } else {
-            // Если прошло менее 3 часов, вычисляем заработок и включаем автокликер
+        const effectiveTime = Math.min(elapsedTime, maxOfflineTime);
+        const earnings = Math.floor(effectiveTime) * clickValue;
+
+        tpcCount += earnings;
+        updateCoins();
+        saveCoins();
+    }
+}
+
+// Проверка времени отсутствия пользователя при загрузке страницы и запуск автокликера при необходимости
+function checkOfflineTimeAndStartAutoClicker() {
+    const lastExitTime = localStorage.getItem('lastExitTime');
+    if (lastExitTime) {
+        const currentTime = Date.now();
+        const elapsedTime = (currentTime - parseInt(lastExitTime)) / 1000; // в секундах
+        const maxOfflineTime = 3 * 60 * 60; // 3 часа в секундах
+
+        if (elapsedTime <= maxOfflineTime) {
+            // Если прошло менее 3 часов, учитываем заработок
             const earnings = Math.floor(elapsedTime) * clickValue;
             tpcCount += earnings;
             updateCoins();
+        } else {
+            // Если прошло более 3 часов, запускаем автокликер
             startAutoClicker();
         }
     }
 }
 
-// Запускаем проверку времени отсутствия пользователя при загрузке страницы
-checkOfflineTime();
+// Проверяем время отсутствия пользователя и запускаем автокликер при необходимости при загрузке страницы
+checkOfflineTimeAndStartAutoClicker();
+
 
 // Функция для запуска автокликера
 function startAutoClicker() {
