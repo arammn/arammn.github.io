@@ -164,33 +164,38 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
 
     // Функция для проверки выполнения задания
-    function checkTaskCompletion(taskId, currentProgress) {
-        const task = tasks.find(task => task.id === taskId);
-        if (task && currentProgress >= task.requirement) {
-            // Задание выполнено, показываем временное сообщение "success"
-            const successMessage = document.createElement('div');
-            successMessage.textContent = `Вы выполнили задание: ${task.description}!`;
-            successMessage.classList.add('success-message');
-            document.body.appendChild(successMessage);
+function checkTaskCompletion(taskId, currentProgress) {
+    const task = tasks.find(task => task.id === taskId);
+    if (task && currentProgress >= task.requirement) {
+        // Задание выполнено, показываем временное сообщение "success"
+        const successMessage = document.createElement('div');
+        successMessage.textContent = `Вы выполнили задание: ${task.description}!`;
+        successMessage.classList.add('success-message');
+        document.body.appendChild(successMessage);
 
-            // Скрыть сообщение через 3 секунды (3000 миллисекунд)
-            setTimeout(() => {
-                document.body.removeChild(successMessage);
-            }, 3000);
+        // Скрыть сообщение через 3 секунды (3000 миллисекунд)
+        setTimeout(() => {
+            document.body.removeChild(successMessage);
+        }, 3000);
 
-            // Удаляем задание из списка
-            const taskIndex = tasks.findIndex(t => t.id === taskId);
-            if (taskIndex !== -1) {
-                tasks.splice(taskIndex, 1);
-            }
+        // Удаляем задание из списка
+        const taskIndex = tasks.findIndex(t => t.id === taskId);
+        if (taskIndex !== -1) {
+            tasks.splice(taskIndex, 1);
+            localStorage.setItem('tasks', JSON.stringify(tasks)); // обновляем localStorage
+        }
 
-            // Обновляем интерфейс
-            const taskElement = document.getElementById(taskId);
-            if (taskElement) {
-                taskElement.parentNode.removeChild(taskElement);
-            }
+        // Удаляем прогресс задания из localStorage
+        localStorage.removeItem(`${taskId}Progress`);
+
+        // Обновляем интерфейс
+        const taskElement = document.getElementById(taskId);
+        if (taskElement) {
+            taskElement.parentNode.removeChild(taskElement);
         }
     }
+}
+
 
     // Обновление прогресса задания
     function updateTaskProgress(taskId, currentProgress) {
