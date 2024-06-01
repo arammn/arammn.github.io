@@ -1,6 +1,6 @@
 let tg = window.Telegram.WebApp;
 tg.expand();
-if(tg.ready()){
+tg.ready();
     if (tg.MainButton.isVisible){ //если кнопка показана 
 		tg.MainButton.hide()
 function toggleFullscreenPanel() {
@@ -317,5 +317,4 @@ function checkTaskCompletion(taskId, currentProgress) {
 }
 else{ //иначе
     tg.MainButton.show() //показываем 
-}
 }
