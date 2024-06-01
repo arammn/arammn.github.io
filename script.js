@@ -151,6 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 
     // Проверка времени отсутствия пользователя при загрузке страницы
+// Проверка времени отсутствия пользователя при загрузке страницы
 function checkOfflineTime() {
     const lastExitTime = localStorage.getItem('lastExitTime');
     if (lastExitTime) {
@@ -159,8 +160,13 @@ function checkOfflineTime() {
         const maxOfflineTime = 3 * 60 * 60; // 3 часа в секундах
 
         if (elapsedTime >= maxOfflineTime) {
-            // Если прошло более 3 часов, вычисляем заработок и включаем автокликер
+            // Если прошло более 3 часов, вычисляем заработок, но не включаем автокликер
             const earnings = Math.floor(maxOfflineTime) * clickValue;
+            tpcCount += earnings;
+            updateCoins();
+        } else {
+            // Если прошло менее 3 часов, вычисляем заработок и включаем автокликер
+            const earnings = Math.floor(elapsedTime) * clickValue;
             tpcCount += earnings;
             updateCoins();
             startAutoClicker();
@@ -170,6 +176,27 @@ function checkOfflineTime() {
 
 // Запускаем проверку времени отсутствия пользователя при загрузке страницы
 checkOfflineTime();
+
+// Функция для запуска автокликера
+function startAutoClicker() {
+    if (!autoClickerInterval) {
+        autoClickerInterval = setInterval(() => {
+            tpcCount += clickValue;
+            updateCoins();
+            saveData();
+            createCoinEffect();
+        }, 1000);
+        localStorage.setItem('autoClickerRunning', 'true');
+    }
+}
+
+// Функция для остановки автокликера
+function stopAutoClicker() {
+    clearInterval(autoClickerInterval);
+    autoClickerInterval = null;
+    localStorage.removeItem('autoClickerRunning');
+}
+
 
 
     // Initial update of upgrade prices
