@@ -1,6 +1,8 @@
 let tg = window.Telegram.WebApp;
 tg.expand();
 if(tg.ready()){
+    if (tg.MainButton.isVisible){ //если кнопка показана 
+		tg.MainButton.hide()
 function toggleFullscreenPanel() {
     var panel = document.getElementById('fullscreenPanel');
     panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
@@ -312,4 +314,5 @@ function checkTaskCompletion(taskId, currentProgress) {
         checkTaskCompletion('task3', 1);
     });
 });
+}
 }
