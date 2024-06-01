@@ -1,27 +1,6 @@
 let tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
-document.addEventListener('DOMContentLoaded', () => {
-            function requestFullScreen(element) {
-                if (element.requestFullscreen) {
-                    element.requestFullscreen();
-                } else if (element.mozRequestFullScreen) { // Firefox
-                    element.mozRequestFullScreen();
-                } else if (element.webkitRequestFullscreen) { // Chrome, Safari and Opera
-                    element.webkitRequestFullscreen();
-                } else if (element.msRequestFullscreen) { // IE/Edge
-                    element.msRequestFullscreen();
-                }
-            }
-
-            // Request fullscreen mode
-            requestFullScreen(document.documentElement);
-
-            // Ensure the iframe takes up the full screen
-            const iframe = document.querySelector('iframe');
-            iframe.style.width = '100vw';
-            iframe.style.height = '100vh';
-        });
 function toggleFullscreenPanel() {
     var panel = document.getElementById('fullscreenPanel');
     panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
