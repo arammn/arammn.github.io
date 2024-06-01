@@ -14,6 +14,7 @@ tg.ready();
         let tpcCount = 0;
         let clickValue = 1;
         let autoClickerInterval = null;
+        let autoClickerCount = 0;
         let upgradePrices = {
             clickValue: 10,
             autoClicker: 100
@@ -117,10 +118,10 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // Функция для запуска автокликера
-function startAutoClicker() {
+function startAutoClicker(count) {
     if (!autoClickerInterval) {
         autoClickerInterval = setInterval(() => {
-            tpcCount += clickValue;
+            tpcCount += clickValue * (count + 1); // Increase effectiveness with each purchase
             updateCoins();
             saveCoins();
             createCoinEffect();
@@ -128,6 +129,7 @@ function startAutoClicker() {
         localStorage.setItem('autoClickerRunning', 'true');
     }
 }
+
 
 // Добавляем обработчик события для кнопки "Сбросить все"
 const resetAllButton = document.getElementById('reset-all-button');
@@ -159,7 +161,7 @@ resetAllButton.addEventListener('click', () => {
         buyButtons.forEach(button => {
             button.addEventListener('click', function () {
                 const upgrade = this.getAttribute('data-upgrade');
-                const cost = upgradePrices[upgrade];
+                const cost = upgradePrices[upgrade] * Math.pow(2, autoClickerCount); // Increase price exponentially
                 if (tpcCount >= cost) {
                     tpcCount -= cost;
                     updateCoins();
@@ -167,9 +169,10 @@ resetAllButton.addEventListener('click', () => {
                         clickValue += 1;
                         localStorage.setItem('clickValue', clickValue);
                     } else if (upgrade === 'autoClicker') {
-                        startAutoClicker();
+                        autoClickerCount++; // Increase auto-clicker count
+                        startAutoClicker(autoClickerCount);
                     }
-                    upgradePrices[upgrade] *= 2;
+                    upgradePrices[upgrade] *= 2; // Double upgrade price for the next purchase
                     localStorage.setItem('upgradePrices', JSON.stringify(upgradePrices));
                     updateUpgradePrices();
                 } else {
@@ -177,6 +180,12 @@ resetAllButton.addEventListener('click', () => {
                     successMessage.textContent = `Not enough TPC!`;
                     successMessage.classList.add('success-message');
                     document.body.appendChild(successMessage);
+                    
+                    // Add a timeout to remove the success message after 3 seconds
+                    setTimeout(() => {
+                        document.body.removeChild(successMessage);
+                    }, 3000); // Adjust the time as needed (in milliseconds)
+                    
                 }
             });
         });
