@@ -1,7 +1,8 @@
 let tg = window.Telegram.WebApp;
+var MainButton = WebApp.MainButton;
 tg.expand();
 tg.ready();
-tg.MainButton.hide()
+MainButton.hide()
 function toggleFullscreenPanel() {
     var panel = document.getElementById('fullscreenPanel');
     panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
