@@ -133,25 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Calculate earnings while the user was away
-    function calculateOfflineEarnings() {
-    const lastExitTime = localStorage.getItem('lastExitTime');
-    if (lastExitTime) {
-        const currentTime = Date.now();
-        const elapsedTime = (currentTime - parseInt(lastExitTime)) / 1000; // в секундах
-        const maxOfflineTime = 3 * 60 * 60; // 3 часа в секундах
-
-        const effectiveTime = Math.min(elapsedTime, maxOfflineTime);
-        const earnings = Math.floor(effectiveTime) * clickValue; // Вычисляем заработок за время отсутствия
-
-        tpcCount += earnings; // Добавляем заработанные монеты
-        updateCoins(); // Обновляем отображение монет на экране
-        saveData(); // Сохраняем текущее состояние игры
-    }
-}
-
     // Проверка времени отсутствия пользователя при загрузке страницы
-// Проверка времени отсутствия пользователя при загрузке страницы
 function checkOfflineTime() {
     const lastExitTime = localStorage.getItem('lastExitTime');
     if (lastExitTime) {
@@ -176,6 +158,26 @@ function checkOfflineTime() {
 
 // Запускаем проверку времени отсутствия пользователя при загрузке страницы
 checkOfflineTime();
+
+// Функция для запуска автокликера
+function startAutoClicker() {
+    if (!autoClickerInterval) {
+        autoClickerInterval = setInterval(() => {
+            tpcCount += clickValue;
+            updateCoins();
+            saveData();
+            createCoinEffect();
+        }, 1000);
+        localStorage.setItem('autoClickerRunning', 'true');
+    }
+}
+
+// Функция для остановки автокликера
+function stopAutoClicker() {
+    clearInterval(autoClickerInterval);
+    autoClickerInterval = null;
+    localStorage.removeItem('autoClickerRunning');
+}
 
 // Функция для запуска автокликера
 function startAutoClicker() {
