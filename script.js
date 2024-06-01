@@ -150,6 +150,27 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 }
 
+    // Проверка времени отсутствия пользователя при загрузке страницы
+function checkOfflineTime() {
+    const lastExitTime = localStorage.getItem('lastExitTime');
+    if (lastExitTime) {
+        const currentTime = Date.now();
+        const elapsedTime = (currentTime - parseInt(lastExitTime)) / 1000; // в секундах
+        const maxOfflineTime = 3 * 60 * 60; // 3 часа в секундах
+
+        if (elapsedTime >= maxOfflineTime) {
+            // Если прошло более 3 часов, вычисляем заработок и включаем автокликер
+            const earnings = Math.floor(maxOfflineTime) * clickValue;
+            tpcCount += earnings;
+            updateCoins();
+            startAutoClicker();
+        }
+    }
+}
+
+// Запускаем проверку времени отсутствия пользователя при загрузке страницы
+checkOfflineTime();
+
 
     // Initial update of upgrade prices
     updateUpgradePrices();
