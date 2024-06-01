@@ -83,50 +83,61 @@ tg.ready();
             localStorage.setItem('tpcCount', tpcCount);
         }
 
-        const maxIdleTime = 5 * 60 * 60 * 1000; // 5 часов
+// Определить максимальное время простоя (5 часов в миллисекундах)
+const maxIdleTime = 5 * 60 * 60 * 1000; // 5 часов
 
-        let elapsedTimeSinceLastExit = 0;
+let elapsedTimeSinceLastExit = 0;
 
-        // Проверяем, выходил ли пользователь ранее со страницы
-        if (lastExitTime) {
-            const currentTime = Date.now();
-            elapsedTimeSinceLastExit = currentTime - parseInt(lastExitTime);
-            // Ограничиваем прошедшее время максимальным временем бездействия
-            elapsedTimeSinceLastExit = Math.min(elapsedTimeSinceLastExit, maxIdleTime);
+// Проверяем, покидал ли пользователь сайт ранее
+if (lastExitTime) {
+    const currentTime = Date.now();
+    elapsedTimeSinceLastExit = currentTime - parseInt(lastExitTime);
+    // Ограничиваем прошедшее время максимальным временем простоя
+    elapsedTimeSinceLastExit = Math.min(elapsedTimeSinceLastExit, maxIdleTime);
 
-            // Рассчитываем количество кликов за прошедшее время
-            const clicksDuringIdle = Math.floor(elapsedTimeSinceLastExit / 1000) * clickValue;
-            tpcCount += clicksDuringIdle;
+    // Рассчитываем количество кликов в течение прошедшего времени
+    const clicksDuringIdle = Math.floor(elapsedTimeSinceLastExit / 1000) * clickValue;
+    tpcCount += clicksDuringIdle;
+    updateCoins();
+}
+
+// Запускаем автокликер, если он был активен ранее
+if (localStorage.getItem('autoClickerRunning') === 'true') {
+    startAutoClicker();
+}
+
+// Обновляем время последнего выхода при закрытии страницы пользователем
+window.addEventListener('beforeunload', () => {
+    localStorage.setItem('lastExitTime', Date.now());
+});
+
+// Перезапускаем автокликер при загрузке страницы
+window.addEventListener('DOMContentLoaded', () => {
+    startAutoClicker();
+});
+
+// Функция для запуска автокликера
+function startAutoClicker() {
+    if (!autoClickerInterval) {
+        autoClickerInterval = setInterval(() => {
+            tpcCount += clickValue;
             updateCoins();
-        }
+            saveCoins();
+            createCoinEffect();
+        }, 1000);
+        localStorage.setItem('autoClickerRunning', 'true');
+    }
+}
 
-        // Запускаем автокликер, если он был активен ранее
-        if (localStorage.getItem('autoClickerRunning') === 'true') {
-            startAutoClicker();
-        }
+// Добавляем обработчик события для кнопки "Сбросить все"
+const resetAllButton = document.getElementById('reset-all-button');
+resetAllButton.addEventListener('click', () => {
+    // Сбрасываем все данные в localStorage
+    localStorage.clear();
+    // Обновляем страницу
+    location.reload();
+});
 
-        // Обновляем время последнего выхода при закрытии страницы
-        window.addEventListener('beforeunload', () => {
-            localStorage.setItem('lastExitTime', Date.now());
-        });
-
-        // Перезапускаем автокликер при загрузке страницы
-        window.addEventListener('DOMContentLoaded', () => {
-            startAutoClicker();
-        });
-
-        // Функция для запуска автокликера
-        function startAutoClicker() {
-            if (!autoClickerInterval) {
-                autoClickerInterval = setInterval(() => {
-                    tpcCount += clickValue;
-                    updateCoins();
-                    saveCoins();
-                    createCoinEffect();
-                }, 1000);
-                localStorage.setItem('autoClickerRunning', 'true');
-            }
-        }
 
         function formatNumber(number) {
             if (number >= 1000000000) {
