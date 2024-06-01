@@ -1,3 +1,8 @@
+function toggleFullscreenPanel() {
+    var panel = document.getElementById('fullscreenPanel');
+    panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     let tpcCount = 0;
     let clickValue = 1;
@@ -6,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
         clickValue: 10,
         autoClicker: 100
     };
-
     // Load saved coins, click value, and upgrade prices from localStorage
     if (localStorage.getItem('tpcCount')) {
         tpcCount = parseInt(localStorage.getItem('tpcCount'));
@@ -37,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function toggleShop() {
         shop.classList.toggle('hidden');
+
     }
 
     document.getElementById('mine-button').addEventListener('click', () => {
@@ -105,7 +110,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 localStorage.setItem('upgradePrices', JSON.stringify(upgradePrices));
                 updateUpgradePrices();
             } else {
-                alert('Not enough TPC!');
+                const successMessage = document.createElement('div');
+                    successMessage.textContent = `Not enough TPC!`;
+                    successMessage.classList.add('success-message');
+                document.body.appendChild(successMessage);
             }
         });
     });
@@ -159,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const tasks = [
         { id: 'task1', description: 'Накликай 1000 раз', requirement: 1000 },
         { id: 'task2', description: 'Будь в игре 30 минут', requirement: 30 * 60 },
-        { id: 'task3', description: 'Накопи 100 монет', requirement: 100 }
+        { id: 'task3', description: 'Получи автокликер', requirement: 1 }
          // 30 минут в секундах
     ];
 
@@ -220,12 +228,12 @@ function checkTaskCompletion(taskId, currentProgress) {
     const autoClickerButton = document.querySelector('.buy-button[data-upgrade="autoClicker"]');
     autoClickerButton.addEventListener('click', function () {
         // Обновляем прогресс задания "Получи автокликер"
-        const task2Progress = parseInt(localStorage.getItem('task2Progress')) || 0;
-        localStorage.setItem('task2Progress', 1);
-        updateTaskProgress('task2', 1);
+        const task3Progress = parseInt(localStorage.getItem('task3Progress')) || 0;
+        localStorage.setItem('task3Progress', 1);
+        updateTaskProgress('task3', 1);
 
         // Проверяем выполнение задания
-        checkTaskCompletion('task2', 1);
+        checkTaskCompletion('task3', 1);
 
         // Запускаем таймер, если он еще не запущен
         if (!inGameTimer) {
@@ -250,8 +258,10 @@ function checkTaskCompletion(taskId, currentProgress) {
         timeSpentInGame++; // увеличиваем время, проведенное в игре
         updateTaskProgress('task2', timeSpentInGame); // обновляем прогресс задания "Быть в игре 30 минут"
 
-        // Проверяем выполнение задания
+        checkTaskCompletion('task1', timeSpentInGame);// Проверяем выполнение задания
         checkTaskCompletion('task2', timeSpentInGame);
+        checkTaskCompletion('task3', timeSpentInGame);
+        
     }
 
     // Запуск таймера при загрузке страницы
@@ -288,7 +298,7 @@ function checkTaskCompletion(taskId, currentProgress) {
         // Проверяем выполнение задания
         checkTaskCompletion('task1', task1Progress + 1);
     });
-
+    
     autoClickerButton.addEventListener('click', function () {
         // Обновляем прогресс задания "Получи автокликер"
         const task3Progress = parseInt(localStorage.getItem('task3Progress')) || 0;
