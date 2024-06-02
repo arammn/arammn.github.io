@@ -38,29 +38,46 @@
         <div id="mining-area">
             <button id="mine-button"><img src="wolf-removebg-preview.png" alt="Bitcoin"></button>
             
-            <div id="TPC">0</div><button id="shop-button">Shop</button>
+            <div id="TPC">0</div><button id="shop-button" onclick="toggleFullscreenPanel2()">Shop</button>
             <button id="earn-button" onclick="toggleFullscreenPanel()">Earn</button>
             <button id="airdrop-button">AirDrop</button>
+            <button id="obmen-button" onclick="toggleFullscreenPanel1()">Convert</button>
             <div id="tpc-per-second" class="crypto-counter">TPC per second: 0</div>
         </div>
-        <div id="shop" class="hidden">
-            <div class="shop-panel">
-                <div class="item">
-                    <div class="item-name">Upgrade Pickaxe</div>
-                    <div class="item-cost">Cost: 10 TPC</div>
-                    <button class="buy-button" data-cost="10" data-upgrade="clickValue">Buy</button>
-                </div>
-                <div class="item">
-                    <div class="item-name">Mining Robot</div>
-                    <!-- Измененная цена для соответствия новой экономике -->
-                    <div class="item-cost">Cost: 1000 TPC</div>
-                    <button class="buy-button" data-cost="1000" data-upgrade="autoClicker">Buy</button>
+        <div class="fullscreen-panel2" id="fullscreenPanel2">
+            <div id="shop">
+                <div class="shop-panel">
+                    <div class="item">
+                        <div class="item-name">Upgrade Pickaxe</div>
+                        <div class="item-cost">Cost: 10 TPC</div>
+                        <button class="buy-button" data-cost="10" data-upgrade="clickValue">Buy</button>
+                    </div>
+                    <div class="item">
+                        <div class="item-name">Mining Robot</div>
+                        <!-- Измененная цена для соответствия новой экономике -->
+                        <div class="item-cost">Cost: 1000 TPC</div>
+                        <button class="buy-button" data-cost="1000" data-upgrade="autoClicker">Buy</button>
+                    </div>
+                    <button class="close-btn" onclick="toggleFullscreenPanel2()">Close Earn</button>
                 </div>
                 
             </div>
         </div>
+        <div class="fullscreen-panel1" id="fullscreenPanel1">
+            <div class="container">
+                <h1>Конвертация TPC в Mega TPC</h1>
+                <div id="mining-area">
+                    <label for="tpc-amount">Введите количество TPC:</label>
+                    <input type="text" id="tpc-amount">
+                    <button id="convert-button">Конвертировать</button>
+                    <!-- <div>Количество сконвертированных Mega TPC: <span id="result">0 Mega TPC</span></div> -->
+                    <div id = "mega-gega">Mega TPC-s: <span id="mega-tpc-count">0 Mega TPC</span></div><button class="close-btn1" onclick="toggleFullscreenPanel1()">Close Earn</button></div>
+                    
+            </div>
+            
+        </div>
         <button id="reset-all-button">Сбросить все</button>
-
+        </div>
         
     </div>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
