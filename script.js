@@ -29,16 +29,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const shopButton = document.getElementById('shop-button');
     const shop = document.getElementById('shop');
-    const resetClicksButton = document.getElementById('reset-clicks-button');
 
     shopButton.addEventListener('click', function () {
         toggleShop();
-    });
-
-    resetClicksButton.addEventListener('click', function () {
-        tpcCount = 0;
-        updateCoins();
-        saveCoins();
     });
 
     function toggleShop() {
@@ -103,9 +96,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateCoins();
                 if (upgrade === 'clickValue') {
                     clickValue += 1;
+                    updateTPCPerSecond();
                     localStorage.setItem('clickValue', clickValue);
                 } else if (upgrade === 'autoClicker') {
                     startAutoClicker();
+                    updateTPCPerSecond();
                 }
                 upgradePrices[upgrade] *= 2;
                 localStorage.setItem('upgradePrices', JSON.stringify(upgradePrices));
@@ -132,18 +127,22 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 1000);
             localStorage.setItem('autoClickerRunning', 'true');
         }
+        updateTPCPerSecond();
     }
-
-    // Initial update of upgrade prices
+    function updateTPCPerSecond() {
+        const tpcPerSecond = clickValue;
+        document.getElementById('tpc-per-second').textContent = `TPC per second: ${formatNumber(tpcPerSecond)}`;
+    }
     updateUpgradePrices();
+    updateTPCPerSecond();
+    // Initial update of upgrade prices
+    
 
     // Check if autoClicker was running
     if (localStorage.getItem('autoClickerRunning') === 'true') {
         startAutoClicker();
+        updateTPCPerSecond();
     }
-
-    // Calculate offline earnings on page load
-    calculateOfflineEarnings();
 
     // Save the time of exit before the page unloads
     window.addEventListener('beforeunload', () => {
@@ -263,9 +262,10 @@ function checkTaskCompletion(taskId, currentProgress) {
         clearInterval(inGameTimer); // очищаем интервал таймера
     });
     const resetAllButton = document.getElementById('reset-all-button');
-resetAllButton.addEventListener('click', () => {
+    resetAllButton.addEventListener('click', () => {
     // Сбрасываем все данные в localStorage
     localStorage.clear();
+    tpcCount = 0;
     // Обновляем страницу
     location.reload();
 });
