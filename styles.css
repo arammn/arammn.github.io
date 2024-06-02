@@ -32,7 +32,42 @@ h1 {
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
-#shop-button, #reset-clicks-button, #earn-button {
+
+/* Стили для счетчика TPC в секунду */
+.crypto-counter {
+    background-color: #1e1e1e;
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #00ff00;
+    text-align: center;
+    margin: 20px auto;
+    width: fit-content;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.crypto-counter:hover {
+    background-color: #2e2e2e;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.7);
+}
+
+/* Эффект неоновой анимации */
+@keyframes neon {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(0, 255, 0, 0.3), 0 0 60px rgba(0, 255, 0, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(0, 255, 0, 0.7), 0 0 60px rgba(0, 255, 0, 0.5), 0 0 90px rgba(0, 255, 0, 0.3);
+    }
+}
+
+.crypto-counter {
+    animation: neon 1.5s infinite alternate;
+}
+#shop-button, #airdrop-button, #earn-button {
     font-size: 1.5rem;
     padding: 15px 30px;
     cursor: pointer;
@@ -59,14 +94,67 @@ h1 {
     backdrop-filter: blur(5px); /* Добавляем размытие заднего фона */
     animation: fadeInOut 3s forwards;
 }
+.error-message {
+    position: fixed;
+    top: 50%; /* Положение сверху по центру */
+    left: 50%; /* Положение слева по центру */
+    width: 100px;
+    height: 100px;
+    transform: translate(-50%, -50%); /* Центрируем относительно центра экрана */
+    color: rgb(0, 0, 0);
+    font-family: sans-serif;
+    font-weight: 1000;
+    padding: 1000px 2000px;
+    border-radius: 5px;
+    z-index: 9999;
+    opacity: 0;
+    backdrop-filter: blur(5px); /* Добавляем размытие заднего фона */
+    animation: fadeInOut 3s forwards;
+}
 
+/* Стили для счетчика TPC в секунду */
+.crypto-counter {
+    background-color: #1e1e1e;
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #00ff00;
+    text-align: center;
+    margin: 20px auto;
+    width: fit-content;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+    transition: all 0.3s ease;
+}
 
+.crypto-counter:hover {
+    background-color: #2e2e2e;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.7);
+}
+
+/* Эффект неоновой анимации */
+@keyframes neon {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(0, 255, 0, 0.3), 0 0 60px rgba(0, 255, 0, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(0, 255, 0, 0.7), 0 0 60px rgba(0, 255, 0, 0.5), 0 0 90px rgba(0, 255, 0, 0.3);
+    }
+}
+
+.crypto-counter {
+    animation: neon 1.5s infinite alternate;
+}
 #mine-button {
     background: transparent; /* Убираем фон кнопки */
     border: none; /* Убираем границу */
     cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0,0,0,0); /* Убирает синее подсвечивание при нажатии */
+    -webkit-tap-highlight-color: transparent; /* Для браузеров, не поддерживающих первый вариант */
+    touch-action: manipulation; /* Убирает задержку при нажатии */
     font-size: 0rem;
-    padding: 15px 3-0px;
+    padding: 0;
     cursor: pointer;
     border: none;
     border-radius: 0px;
@@ -82,17 +170,17 @@ h1 {
     transform: scale(0.95);
 }
 
-#shop-button, #reset-clicks-button, #earn-button {
+#shop-button, #airdrop-button, #earn-button {
     font-weight: bold;
     background-image: linear-gradient(to right, #3f422e, #be9090);
     color: #fff;
 }
 
-#shop-button:active, #reset-clicks-button:active, #earn-button:active {
+#shop-button:active, #airdrop-button:active, #earn-button:active {
     transform: scale(0.95);
 }
 
-#shop-button:hover, #reset-clicks-button:hover, #earn-button:hover {
+#shop-button:hover, #airdrop-button:hover, #earn-button:hover {
     background-image: linear-gradient(to right, #be9090, #3f422e);
     transform: scale(0.95);
 }
@@ -294,8 +382,9 @@ h1 {
 @keyframes fadeInOut {
     0% { opacity: 0; }
     10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { opacity: 0; }
+    80% { opacity: 1; }
+    90% { opacity: 0;}
+    100% { z-index: 1;}
 }
 
 @keyframes butonim {
