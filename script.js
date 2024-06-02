@@ -279,7 +279,13 @@ function checkTaskCompletion(taskId, currentProgress) {
     window.addEventListener('beforeunload', () => {
         clearInterval(inGameTimer); // очищаем интервал таймера
     });
-
+    const resetAllButton = document.getElementById('reset-all-button');
+resetAllButton.addEventListener('click', () => {
+    // Сбрасываем все данные в localStorage
+    localStorage.clear();
+    // Обновляем страницу
+    location.reload();
+});
     // При обновлении страницы, сохраняем время, проведенное в игре
     window.addEventListener('beforeunload', () => {
         localStorage.setItem('timeSpentInGame', timeSpentInGame);
