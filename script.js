@@ -5,6 +5,14 @@ function toggleFullscreenPanel() {
     var panel = document.getElementById('fullscreenPanel');
     panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
 }
+function toggleFullscreenPanel1() {
+    var panel1 = document.getElementById('fullscreenPanel1');
+    panel1.style.display = panel1.style.display === 'none' ? 'flex' : 'none';
+}
+function toggleFullscreenPanel2() {
+    var panel2 = document.getElementById('fullscreenPanel2');
+    panel2.style.display = panel2.style.display === 'none' ? 'flex' : 'none';
+}
 document.addEventListener('DOMContentLoaded', function () {
     let tpcCount = 0;
     let clickValue = 1;
@@ -30,13 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const shopButton = document.getElementById('shop-button');
     const shop = document.getElementById('shop');
 
-    shopButton.addEventListener('click', function () {
-        toggleShop();
-    });
 
-    function toggleShop() {
-        shop.classList.toggle('hidden');
-    }
 
     document.getElementById('mine-button').addEventListener('click', () => {
         tpcCount += clickValue;
@@ -299,5 +301,46 @@ function checkTaskCompletion(taskId, currentProgress) {
 
         // Проверяем выполнение задания
         checkTaskCompletion('task3', 1);
+    });
+
+
+           // Проверяем, есть ли сохраненное значение Mega TPC в localStorage
+    var megaTPCCount = parseFloat(localStorage.getItem('megaTPCCount')) || 0;
+
+    // Отображаем сохраненное значение Mega TPC
+    document.getElementById('mega-tpc-count').innerText = megaTPCCount.toFixed(3) + ' Mega TPC';
+
+    document.getElementById('convert-button').addEventListener('click', function () {
+        var tpcAmount = parseFloat(document.getElementById('tpc-amount').value);
+
+        if (isNaN(tpcAmount)) {
+            const successMessage = document.createElement('div');
+            successMessage.textContent = `Введите числовое значение.`;
+            successMessage.classList.add('success-message');
+            document.body.appendChild(successMessage);
+            setTimeout(() => {
+                document.body.removeChild(successMessage);
+            }, 3000);
+            return;
+        }
+        if(tpcAmount <= tpcCount){
+            var megaTPCAmount = tpcAmount / 1000;
+            tpcCount = tpcCount - tpcAmount;
+            megaTPCCount += megaTPCAmount; // Увеличиваем количество Mega TPC
+
+            // Сохраняем значение Mega TPC в localStorage
+            localStorage.setItem('megaTPCCount', megaTPCCount);
+            updateCoins();
+        }else{
+            const successMessage = document.createElement('div');
+            successMessage.textContent = `не хватает TPC`;
+            successMessage.classList.add('success-message');
+            document.body.appendChild(successMessage);
+            setTimeout(() => {
+                document.body.removeChild(successMessage);
+            }, 3000);
+        }
+        // document.getElementById('result').innerText = megaTPCAmount.toFixed(3) + ' Mega TPC'; // Отображаем сконвертированное количество Mega TPC
+        document.getElementById('mega-tpc-count').innerText = megaTPCCount.toFixed(3) + ' Mega TPC'; // Отображаем общее количество Mega TPC
     });
 });
