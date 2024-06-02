@@ -134,23 +134,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Calculate earnings while the user was away
-    function calculateOfflineEarnings() {
-        const lastExitTime = localStorage.getItem('lastExitTime');
-        if (lastExitTime) {
-            const currentTime = Date.now();
-            const elapsedTime = (currentTime - parseInt(lastExitTime)) / 1000; // in seconds
-            const maxOfflineTime = 3 * 60 * 60; // 3 hours in seconds
-
-            const effectiveTime = Math.min(elapsedTime, maxOfflineTime);
-            const earnings = Math.floor(effectiveTime) * clickValue;
-
-            tpcCount += earnings;
-            updateCoins();
-            saveCoins();
-        }
-    }
-
     // Initial update of upgrade prices
     updateUpgradePrices();
 
