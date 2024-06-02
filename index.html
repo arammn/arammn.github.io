@@ -40,7 +40,8 @@
             
             <div id="TPC">0</div><button id="shop-button">Shop</button>
             <button id="earn-button" onclick="toggleFullscreenPanel()">Earn</button>
-            <button id="reset-clicks-button">Reset Clicks</button>
+            <button id="airdrop-button">AirDrop</button>
+            <div id="tpc-per-second" class="crypto-counter">TPC per second: 0</div>
         </div>
         <div id="shop" class="hidden">
             <div class="shop-panel">
@@ -51,9 +52,11 @@
                 </div>
                 <div class="item">
                     <div class="item-name">Mining Robot</div>
-                    <div class="item-cost">Cost: 100 TPC</div>
-                    <button class="buy-button" data-cost="100" data-upgrade="autoClicker">Buy</button>
+                    <!-- Измененная цена для соответствия новой экономике -->
+                    <div class="item-cost">Cost: 1000 TPC</div>
+                    <button class="buy-button" data-cost="1000" data-upgrade="autoClicker">Buy</button>
                 </div>
+                
             </div>
         </div>
         <button id="reset-all-button">Сбросить все</button>
