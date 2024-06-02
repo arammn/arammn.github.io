@@ -1,3 +1,6 @@
+let tg = window.Telegram.WebApp;
+tg.expand();
+tg.ready();
 function toggleFullscreenPanel() {
     var panel = document.getElementById('fullscreenPanel');
     panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
@@ -10,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function () {
         clickValue: 10,
         autoClicker: 100
     };
-    const lastExitTime = localStorage.getItem('lastExitTime');
     // Load saved coins, click value, and upgrade prices from localStorage
     if (localStorage.getItem('tpcCount')) {
         tpcCount = parseInt(localStorage.getItem('tpcCount'));
@@ -132,22 +134,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    const maxIdleTime = 5 * 60 * 60 * 1000; // 5 часов
+    // Calculate earnings while the user was away
+    function calculateOfflineEarnings() {
+        const lastExitTime = localStorage.getItem('lastExitTime');
+        if (lastExitTime) {
+            const currentTime = Date.now();
+            const elapsedTime = (currentTime - parseInt(lastExitTime)) / 1000; // in seconds
+            const maxOfflineTime = 3 * 60 * 60; // 3 hours in seconds
 
-    let elapsedTimeSinceLastExit = 0;
-    
-    // Проверяем, покидал ли пользователь сайт ранее
-    if (lastExitTime) {
-        const currentTime = Date.now();
-        elapsedTimeSinceLastExit = currentTime - parseInt(lastExitTime);
-        // Ограничиваем прошедшее время максимальным временем простоя
-        elapsedTimeSinceLastExit = Math.min(elapsedTimeSinceLastExit, maxIdleTime);
-    
-        // Рассчитываем количество кликов в течение прошедшего времени
-        const clicksDuringIdle = Math.floor(elapsedTimeSinceLastExit / 1000) * clickValue;
-        tpcCount += clicksDuringIdle;
-        updateCoins();
+            const effectiveTime = Math.min(elapsedTime, maxOfflineTime);
+            const earnings = Math.floor(effectiveTime) * clickValue;
+
+            tpcCount += earnings;
+            updateCoins();
+            saveCoins();
+        }
     }
+
     // Initial update of upgrade prices
     updateUpgradePrices();
 
