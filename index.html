@@ -35,10 +35,17 @@
     
 </div>
     <div class="container">
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="text_s">Not enough TPC!</p>
+            </div>
+        </div>
         <div id="mining-area">
+            <div id="TPC">0</div>
             <button id="mine-button"><img src="wolf-removebg-preview.png" alt="Bitcoin"></button>
             
-            <div id="TPC">0</div><button id="shop-button" onclick="toggleFullscreenPanel2()">Shop</button>
+            <button id="shop-button" onclick="toggleFullscreenPanel2()">Shop</button>
             <button id="earn-button" onclick="toggleFullscreenPanel()">Earn</button>
             <button id="airdrop-button">AirDrop</button>
             <button id="obmen-button" onclick="toggleFullscreenPanel1()">Convert</button>
@@ -71,7 +78,8 @@
                     <input type="text" id="tpc-amount">
                     <button id="convert-button">Конвертировать</button>
                     <!-- <div>Количество сконвертированных Mega TPC: <span id="result">0 Mega TPC</span></div> -->
-                    <div id = "mega-gega">Mega TPC-s: <span id="mega-tpc-count">0 Mega TPC</span></div><button class="close-btn1" onclick="toggleFullscreenPanel1()">Close Earn</button></div>
+                    <div id = "mega-gega">Mega TPC-s: <span id="mega-tpc-count">0 Mega TPC</span></div>
+                    <button class="close-btn1" onclick="toggleFullscreenPanel1()">Close Earn</button></div>
                     
             </div>
             
