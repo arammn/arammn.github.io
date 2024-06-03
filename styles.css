@@ -32,19 +32,20 @@ body {
 }
 
 .modal-content {
-    position: relative;
-    top: 50%;
-    left: 50%;
-    text-align: center;
-    transform: translate(-50%, -50%);
-    background-color: #fefefe;
-    color:black;
+    background-color: #fff;
+    margin: 5% auto;
     padding: 20px;
-    z-index: 10001;
     border: 1px solid #888;
-    width: 80%; /* Вы можете установить ширину по своему усмотрению */
-    max-width: 400px; /* Необходимая максимальная ширина модального окна */
+    color: black;
+    width: 80%;
+    max-width: 300px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    z-index: 10001;
 }
+
+
 
 .close {
     color: #aaa;
