@@ -16,6 +16,7 @@ function toggleFullscreenPanel2() {
 document.addEventListener('DOMContentLoaded', function () {
     let tpcCount = 0;
     let clickValue = 1;
+    let uved = 0;
     let autoClickerInterval = null;
     let upgradePrices = {
         clickValue: 10,
@@ -121,13 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 localStorage.setItem('upgradePrices', JSON.stringify(upgradePrices));
                 updateUpgradePrices();
             } else {
-                const successMessage = document.createElement('div');
-                    successMessage.textContent = `Not enough TPC!`;
-                    successMessage.classList.add('success-message');
-                document.body.appendChild(successMessage);
-                setTimeout(() => {
-                    document.body.removeChild(successMessage);
-                }, 3000);
+                showModal(1);
             }
         });
     });
@@ -166,52 +161,67 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Определяем задания и их требования
     const tasks = [
-        { id: 'task1', description: 'Накликай 1000 раз', requirement: 1000 },
-        { id: 'task2', description: 'Будь в игре 30 минут', requirement: 30 * 60 },
-        { id: 'task3', description: 'Получи автокликер', requirement: 1 }
-         // 30 минут в секундах
+        { id: 'task1', description: 'Накликай 1000 раз', requirement: 1000, completed: false },
+        { id: 'task2', description: 'Будь в игре 30 минут', requirement: 30 * 60, completed: false },
+        { id: 'task3', description: 'Получи автокликер', requirement: 1, completed: false }
     ];
+    
 
     // Функция для проверки выполнения задания
-function checkTaskCompletion(taskId, currentProgress) {
-    const task = tasks.find(task => task.id === taskId);
-    if (task && currentProgress >= task.requirement) {
-        // Задание выполнено, показываем временное сообщение "success"
-        const successMessage = document.createElement('div');
-        successMessage.textContent = `Вы выполнили задание: ${task.description}!`;
-        successMessage.classList.add('success-message');
-        document.body.appendChild(successMessage);
-
-        // Скрыть сообщение через 3 секунды (3000 миллисекунд)
-        setTimeout(() => {
-            document.body.removeChild(successMessage);
-        }, 3000);
-
-        // Удаляем задание из списка
-        const taskIndex = tasks.findIndex(t => t.id === taskId);
-        if (taskIndex !== -1) {
-            tasks.splice(taskIndex, 1);
-            localStorage.setItem('tasks', JSON.stringify(tasks)); // обновляем localStorage
+    function checkTaskCompletion(taskId, currentProgress) {
+        const task = tasks.find(task => task.id === taskId);
+        if (!task || task.completed) {
+            console.error(`Task with id ${taskId} not found or already completed`);
+            return;
         }
-
-        // Удаляем прогресс задания из localStorage
-        localStorage.removeItem(`${taskId}Progress`);
-
-        // Обновляем интерфейс
-        const taskElement = document.getElementById(taskId);
-        if (taskElement) {
-            taskElement.parentNode.removeChild(taskElement);
+    
+        if (currentProgress >= task.requirement) {
+            // Проверяем, было ли задание выполнено, но еще не показано
+            const taskShown = localStorage.getItem(`${taskId}Shown`);
+            if (!taskShown || taskShown === 'false') {
+                if (task.description === "Накликай 1000 раз") {
+                    showModal(3);
+                } else if (task.description === "Будь в игре 30 минут") {
+                    showModal(4);
+                } else if (task.description === "Получи автокликер") {
+                    showModal(5);
+                }
+    
+                // Помечаем задание как показанное
+                localStorage.setItem(`${taskId}Shown`, true);
+            }
+    
+            // Помечаем задание как выполненное
+            task.completed = true;
+    
+            // Сохраняем информацию о выполнении задания в localStorage
+            localStorage.setItem(`${taskId}Completed`, true);
+    
+            // Удаляем прогресс задания из localStorage
+            localStorage.removeItem(`${taskId}Progress`);
+    
+            // Обновляем интерфейс
+            const taskElement = document.getElementById(taskId);
+            if (taskElement) {
+                taskElement.parentNode.removeChild(taskElement);
+            }
         }
     }
-}
 
 
     // Обновление прогресса задания
     function updateTaskProgress(taskId, currentProgress) {
+        const task = tasks.find(task => task.id === taskId);
+        if (!task) {
+            console.error(`Task with id ${taskId} not found`);
+            return;
+        }
         const taskProgressElement = document.getElementById(`${taskId}-progress`);
-        const taskRequirement = tasks.find(task => task.id === taskId).requirement;
+        const taskRequirement = task.requirement;
         const progressPercentage = (currentProgress / taskRequirement) * 100;
-        taskProgressElement.style.width = `${progressPercentage}%`;
+        if (taskProgressElement) {
+            taskProgressElement.style.width = `${progressPercentage}%`;
+        }
     }
 
     // Добавляем слушатели для кнопки "Mine" и покупки автокликера
@@ -247,7 +257,16 @@ function checkTaskCompletion(taskId, currentProgress) {
     tasks.forEach(task => {
         const taskProgress = parseInt(localStorage.getItem(`${task.id}Progress`)) || 0;
         updateTaskProgress(task.id, taskProgress);
-        checkTaskCompletion(task.id, taskProgress);
+        const taskCompleted = localStorage.getItem(`${task.id}Completed`);
+        if (taskCompleted === 'true') {
+            // Если задание выполнено, скрываем его
+            const taskElement = document.getElementById(task.id);
+            if (taskElement) {
+                taskElement.parentNode.removeChild(taskElement);
+            }
+        } else {
+            checkTaskCompletion(task.id, taskProgress);
+        }
     });
 
     // Добавим функцию для проверки, находится ли пользователь в игре
@@ -327,13 +346,7 @@ function checkTaskCompletion(taskId, currentProgress) {
         var tpcAmount = parseFloat(document.getElementById('tpc-amount').value);
 
         if (isNaN(tpcAmount)) {
-            const successMessage = document.createElement('div');
-            successMessage.textContent = `Введите числовое значение.`;
-            successMessage.classList.add('success-message');
-            document.body.appendChild(successMessage);
-            setTimeout(() => {
-                document.body.removeChild(successMessage);
-            }, 3000);
+            showModal(2);
             return;
         }
         if(tpcAmount <= tpcCount){
@@ -345,13 +358,7 @@ function checkTaskCompletion(taskId, currentProgress) {
             localStorage.setItem('megaTPCCount', megaTPCCount);
             updateCoins();
         }else{
-            const successMessage = document.createElement('div');
-            successMessage.textContent = `не хватает TPC`;
-            successMessage.classList.add('success-message');
-            document.body.appendChild(successMessage);
-            setTimeout(() => {
-                document.body.removeChild(successMessage);
-            }, 3000);
+            showModal(1);
         }
         // document.getElementById('result').innerText = megaTPCAmount.toFixed(3) + ' Mega TPC'; // Отображаем сконвертированное количество Mega TPC
         document.getElementById('mega-tpc-count').innerText = megaTPCCount.toFixed(3) + ' Mega TPC'; // Отображаем общее количество Mega TPC
@@ -363,6 +370,33 @@ function checkTaskCompletion(taskId, currentProgress) {
     // Если устройство не мобильное, перенаправить на другую страницу или показать сообщение
     if (!isMobileDevice()) {
         document.body.innerHTML = '<h1>Доступ разрешен только с мобильных устройств</h1>';
+    }
+    function showModal(mer_txt) {
+            var modal = document.getElementById("myModal");
+            var span = document.getElementsByClassName("close")[0];
+            if(mer_txt == 1){
+                document.getElementById('text_s').innerText = "Dont amount TPC";
+            }else if(mer_txt == 2){
+                document.getElementById('text_s').innerText = "Введите числовое значение.";
+            }else if(mer_txt == 3){
+                document.getElementById('text_s').innerText = "Вы выполнили задание: Накликай 1000 раз";
+            }else if(mer_txt == 4){
+                document.getElementById('text_s').innerText = "Вы выполнили задание: Будь в игре 30 минут";
+            }else if(mer_txt == 5){
+                document.getElementById('text_s').innerText = "Вы выполнили задание: Получи автокликер";
+            }
+
+            modal.style.display = "block";
+
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
     }
 });
         
