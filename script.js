@@ -46,6 +46,19 @@ document.addEventListener('DOMContentLoaded', function () {
         saveCoins();
         createCoinEffect();
     });
+    
+    document.getElementById('mine-button').addEventListener('touchstart', function(event) {
+        // Получить количество касаний
+        const touchCount = event.touches.length;
+
+        // Выполнить несколько кликов
+        for (let i = 0; i < touchCount; i++) {
+        tpcCount += clickValue;
+        updateCoins();
+        saveCoins();
+        createCoinEffect();
+        }
+    });
 
     function createCoinEffect() {
         const coinEffect = document.createElement('div');
@@ -352,3 +365,4 @@ function checkTaskCompletion(taskId, currentProgress) {
         document.body.innerHTML = '<h1>Доступ разрешен только с мобильных устройств</h1>';
     }
 });
+        
