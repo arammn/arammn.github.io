@@ -343,4 +343,12 @@ function checkTaskCompletion(taskId, currentProgress) {
         // document.getElementById('result').innerText = megaTPCAmount.toFixed(3) + ' Mega TPC'; // Отображаем сконвертированное количество Mega TPC
         document.getElementById('mega-tpc-count').innerText = megaTPCCount.toFixed(3) + ' Mega TPC'; // Отображаем общее количество Mega TPC
     });
+    function isMobileDevice() {
+        return /Mobi|Android/i.test(navigator.userAgent);
+    }
+
+    // Если устройство не мобильное, перенаправить на другую страницу или показать сообщение
+    if (!isMobileDevice()) {
+        document.body.innerHTML = '<h1>Доступ разрешен только с мобильных устройств</h1>';
+    }
 });
