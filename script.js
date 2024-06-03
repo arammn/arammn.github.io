@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let tpcCount = 0;
     let clickValue = 1;
     let uved = 0;
+    let task1Progress = parseInt(localStorage.getItem('task1Progress')) || 0;
     let autoClickerInterval = null;
     let upgradePrices = {
         clickValue: 10,
@@ -54,11 +55,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Выполнить несколько кликов
         for (let i = 0; i < touchCount; i++) {
-        tpcCount += clickValue;
-        updateCoins();
-        saveCoins();
-        createCoinEffect();
+            tpcCount += clickValue;
+            updateCoins();
+            saveCoins();
+            createCoinEffect();
+            
         }
+
     });
 
     function createCoinEffect() {
@@ -228,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const mineButton = document.getElementById('mine-button');
     mineButton.addEventListener('click', function () {
         // Обновляем прогресс задания "Накликай 1000 раз"
-        const task1Progress = parseInt(localStorage.getItem('task1Progress')) || 0;
+        task1Progress++;
         localStorage.setItem('task1Progress', task1Progress + 1);
         updateTaskProgress('task1', task1Progress + 1);
 
@@ -254,7 +257,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Загрузка прогресса заданий из localStorage
-    tasks.forEach(task => {
+// Загрузка прогресса заданий из localStorage
+tasks.forEach(task => {
+    if (task.id === 'task1') {
+        task1Progress = parseInt(localStorage.getItem('task1Progress')) || 0;
+        updateTaskProgress(task.id, task1Progress);
+    } else {
         const taskProgress = parseInt(localStorage.getItem(`${task.id}Progress`)) || 0;
         updateTaskProgress(task.id, taskProgress);
         const taskCompleted = localStorage.getItem(`${task.id}Completed`);
@@ -267,7 +275,9 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             checkTaskCompletion(task.id, taskProgress);
         }
-    });
+    }
+});
+
 
     // Добавим функцию для проверки, находится ли пользователь в игре
     let timeSpentInGame = 0; // переменная для отслеживания времени, проведенного в игре (в секундах)
@@ -302,6 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
     tpcCount = 0;
     // Обновляем страницу
     location.reload();
+    
 });
     // При обновлении страницы, сохраняем время, проведенное в игре
     window.addEventListener('beforeunload', () => {
@@ -315,15 +326,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Добавляем слушатели для кнопки "Mine" и покупки автокликера
-    mineButton.addEventListener('click', function () {
-        // Обновляем прогресс задания "Накликай 1000 раз"
-        const task1Progress = parseInt(localStorage.getItem('task1Progress')) || 0;
-        localStorage.setItem('task1Progress', task1Progress + 1);
-        updateTaskProgress('task1', task1Progress + 1);
-
-        // Проверяем выполнение задания
-        checkTaskCompletion('task1', task1Progress + 1);
-    });
+    // mineButton.addEventListener('click', function () {
+    //     // Обновляем прогресс задания "Накликай 1000 раз"
+    //     const task1Progress = parseInt(localStorage.getItem('task1Progress')) || 0;
+    //     task1Progress++;
+    //     localStorage.setItem('task1Progress', task1Progress);
+    //     updateTaskProgress('task1', task1Progress);
+    
+    //     // Проверяем выполнение задания
+    //     checkTaskCompletion('task1', task1Progress);
+    // });
     
     autoClickerButton.addEventListener('click', function () {
         // Обновляем прогресс задания "Получи автокликер"
@@ -368,9 +380,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Если устройство не мобильное, перенаправить на другую страницу или показать сообщение
-    if (!isMobileDevice()) {
-        document.body.innerHTML = '<h1>Доступ разрешен только с мобильных устройств</h1>';
-    }
+    // if (!isMobileDevice()) {
+    //     document.body.innerHTML = '<h1>Доступ разрешен только с мобильных устройств</h1>';
+    // }
     function showModal(mer_txt) {
             var modal = document.getElementById("myModal");
             var span = document.getElementsByClassName("close")[0];
