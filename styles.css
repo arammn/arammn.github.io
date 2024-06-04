@@ -114,7 +114,7 @@ h1 {
 .crypto-counter {
     animation: neon 1.5s infinite alternate;
 }
-#shop-button, #airdrop-button, #earn-button {
+#shop-button, #airdrop-button, #earn-button, #obmen-button {
     font-size: 1.5rem;
     padding: 15px 30px;
     cursor: pointer;
