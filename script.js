@@ -2,14 +2,16 @@ let score = 0;
 let clickValue = 1;
 let autoClicker = false;
 let autoClickerInterval;
+let energy = 1000;
+let maxEnergy = 1000;
 let highestRank = 'Novice';
 const ranks = [
-    { name: 'Novice', threshold: 0 },
-    { name: 'Apprentice', threshold: 100 },
-    { name: 'Journeyman', threshold: 500 },
-    { name: 'Expert', threshold: 1000 },
-    { name: 'Master', threshold: 5000 },
-    { name: 'Grandmaster', threshold: 10000 }
+    { name: 'Novice', threshold: 0, regen: 1, maxEnergy: 1000 },
+    { name: 'Apprentice', threshold: 100, regen: 2, maxEnergy: 1500 },
+    { name: 'Journeyman', threshold: 500, regen: 3, maxEnergy: 2000 },
+    { name: 'Expert', threshold: 1000, regen: 4, maxEnergy: 2500 },
+    { name: 'Master', threshold: 5000, regen: 5, maxEnergy: 3000 },
+    { name: 'Grandmaster', threshold: 10000, regen: 6, maxEnergy: 3500 }
 ];
 
 const upgrades = [
@@ -26,16 +28,30 @@ function updateScore() {
 function updateRank() {
     for (let i = ranks.length - 1; i >= 0; i--) {
         if (score >= ranks[i].threshold) {
-            highestRank = ranks[i].name;
+            if (ranks[i].threshold > ranks.find(r => r.name === highestRank).threshold) {
+                highestRank = ranks[i].name;
+                maxEnergy = ranks[i].maxEnergy;
+                if (energy > maxEnergy) {
+                    energy = maxEnergy;
+                }
+            }
             break;
         }
     }
     document.getElementById('rank').textContent = highestRank;
+    document.getElementById('energy').textContent = energy;
+    document.getElementById('max-energy').textContent = maxEnergy;
 }
 
 document.getElementById('clicker').addEventListener('click', () => {
-    score += clickValue;
-    updateScore();
+    if (energy > 0) {
+        score += clickValue;
+        energy -= 10;
+        updateScore();
+        updateEnergy();
+    } else {
+        showNotification('Not enough energy!');
+    }
 });
 
 document.querySelectorAll('.buy').forEach((button, index) => {
@@ -81,12 +97,30 @@ function showNotification(message) {
     }, 3000);
 }
 
+function updateEnergy() {
+    document.getElementById('energy').textContent = energy;
+    document.getElementById('max-energy').textContent = maxEnergy;
+}
+
+function regenerateEnergy() {
+    const rank = ranks.find(r => r.name === highestRank);
+    if (rank && energy < maxEnergy) {
+        energy += rank.regen;
+        if (energy > maxEnergy) energy = maxEnergy; // Cap energy at max energy
+        updateEnergy();
+    }
+}
+
+setInterval(regenerateEnergy, 1000);
+
 function saveGame() {
     const gameState = {
         score: score,
         clickValue: clickValue,
         autoClicker: autoClicker,
         highestRank: highestRank,
+        energy: energy,
+        maxEnergy: maxEnergy,
         upgrades: upgrades
     };
     localStorage.setItem('cryptoClickerGame', JSON.stringify(gameState));
@@ -100,6 +134,8 @@ function loadGame() {
         clickValue = gameState.clickValue;
         autoClicker = gameState.autoClicker;
         highestRank = gameState.highestRank || 'Novice';
+        energy = gameState.energy || 1000;
+        maxEnergy = gameState.maxEnergy || 1000;
         Object.assign(upgrades, gameState.upgrades);
 
         upgrades.forEach((upgrade, index) => {
@@ -114,6 +150,7 @@ function loadGame() {
         }
 
         updateScore();
+        updateEnergy();
     }
 }
 
@@ -121,6 +158,8 @@ function resetGame() {
     score = 0;
     clickValue = 1;
     autoClicker = false;
+    energy = 1000;
+    maxEnergy = 1000;
     highestRank = 'Novice';
     clearInterval(autoClickerInterval);
     autoClickerInterval = null;
@@ -133,6 +172,7 @@ function resetGame() {
     });
 
     updateScore();
+    updateEnergy();
     localStorage.removeItem('cryptoClickerGame');
 }
 
