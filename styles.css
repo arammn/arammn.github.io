@@ -1,0 +1,155 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #121212;
+    color: #00ff00;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+    text-align: center;
+    width: 300px;
+}
+
+h1 {
+    color: #00ff00;
+}
+
+.scoreboard {
+    font-size: 24px;
+    margin: 20px 0;
+}
+
+.rank {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 5px;
+    background-color: #00ff00;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #121212;
+}
+
+button:hover {
+    background-color: #00cc00;
+}
+
+#clicker {
+    width: 100px;
+    height: 100px;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    margin-bottom: 20px;
+}
+
+#clicker img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.earn-section {
+    margin-bottom: 20px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #1e1e1e;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #00ff00;
+    border-radius: 5px;
+    width: 80%;
+    max-width: 300px; /* Adjusted max-width for smaller screens */
+    position: relative;
+}
+
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #00ff00;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.store {
+    margin-top: 20px;
+}
+
+.store-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.store-item span {
+    flex: 1;
+    text-align: left;
+}
+
+.store-item .cost {
+    color: #ff0000;
+}
+
+.store-item button {
+    flex: 0;
+}
+
+.buy:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+#reset {
+    background-color: #ff0000;
+    color: #ffffff;
+}
+
+#reset:hover {
+    background-color: #cc0000;
+}
+
+.notification {
+    background-color: rgba(0, 255, 0, 0.8);
+    color: #121212;
+    padding: 10px;
+    border-radius: 5px;
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    z-index: 10;
+}
