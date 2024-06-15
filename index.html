@@ -3,44 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Clicker Game</title>
+    <title>Crypto Clicker</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <h1>Crypto Clicker</h1>
         <div class="scoreboard">
-            <span id="score">0</span> clicks
+            Clicks: <span id="score">0</span>
         </div>
         <div class="rank">
             Rank: <span id="rank">Novice</span>
         </div>
-        <button id="clicker">
-            <img src="crypto_icon.png" alt="Crypto Icon">
-        </button>
-        <div id="tasks-panel">
+        <div class="energy">
+            Energy: <span id="energy">1000</span>/<span id="max-energy">1000</span>
         </div>
-        <button id="open-shop">Open Shop</button>
-        <div id="shop-modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Shop</h2>
-                <div class="store">
-                    <div class="store-item" id="upgrade1">
-                        <span>Upgrade Click <span class="cost">(Cost: 10)</span></span>
-                        <button class="buy" data-cost="10" data-upgrade="1">Buy</button>
-                    </div>
-                    <div class="store-item" id="upgrade2">
-                        <span>Auto Clicker <span class="cost">(Cost: 50)</span></span>
-                        <button class="buy" data-cost="50" data-upgrade="2">Buy</button>
-                    </div>
+        <button id="clicker"><img src="crypto_icon.png" alt="Crypto"></button>
+        <div class="earn-section">
+            <button id="open-shop">Open Shop</button>
+        </div>
+        <div class="notification" id="notification"></div>
+        <button id="reset">Reset all</button>
+    </div>
+    
+    <div id="shop-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Shop</h2>
+            <div class="store">
+                <div class="store-item" id="upgrade1">
+                    <span>Upgrade Click</span>
+                    <span class="cost">(Cost: 10)</span>
+                    <button class="buy" data-upgrade="1">Buy</button>
+                </div>
+                <div class="store-item" id="upgrade2">
+                    <span>Auto Clicker</span>
+                    <span class="cost">(Cost: 50)</span>
+                    <button class="buy" data-upgrade="2">Buy</button>
                 </div>
             </div>
         </div>
-        <button id="reset">Reset All</button>
-        <div id="notification" class="notification"></div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
-
