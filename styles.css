@@ -7,6 +7,10 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+
+        outline: none; /* Отключаем стандартный контур */
+        user-select: none; /* Отключаем выделение текста на кнопке */
+    
 }
 
 .container {
@@ -42,6 +46,10 @@ button {
 
 button:hover {
     background-color: #00cc00;
+}
+
+button:active {
+    background-color: transparent; /* Устанавливаем прозрачный фон при активации кнопки */
 }
 
 
