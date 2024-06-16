@@ -12,6 +12,28 @@ body {
         user-select: none; /* Отключаем выделение текста на кнопке */
     
 }
+/* Floating number effect */
+@keyframes float-up {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+}
+
+.floating-number {
+    position: absolute;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 900;
+    animation: float-up 1s ease-in-out forwards;
+    pointer-events: none;
+}
+
+/* Other existing CSS here */
 
 .container {
     background-color: #1e1e1e;
@@ -61,6 +83,7 @@ button:focus {
     outline: none; /* Убираем синюю рамку при фокусе */
     outline: none; /* Убираем синюю рамку при фокусе */
 }
+
 
 
 #clicker {
