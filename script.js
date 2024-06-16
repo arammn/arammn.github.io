@@ -3,7 +3,6 @@ let clickValue = 1;
 let autoClicker = false;
 let autoClickerInterval;
 let energy = 1000;
-let clickInterval;
 let maxEnergy = 1000;
 let highestRank = 'Novice';
 const ranks = [
@@ -44,86 +43,39 @@ function updateRank() {
     document.getElementById('max-energy').textContent = maxEnergy;
 }
 
-// Add event listeners for both mouse and touch events
-document.getElementById('clicker').addEventListener('mousedown', startClicking);
-document.getElementById('clicker').addEventListener('touchstart', startClicking);
-
-document.getElementById('clicker').addEventListener('mouseup', stopClicking);
-document.getElementById('clicker').addEventListener('touchend', stopClicking);
-
-document.getElementById('clicker').addEventListener('mouseleave', stopClicking);
-document.getElementById('clicker').addEventListener('touchcancel', stopClicking);
-
-function startClicking(event) {
-    event.preventDefault(); // Prevent default action for touch events
-
-    if (!clickInterval) {
-        clickInterval = setInterval(() => {
-            if (energy - clickValue >= 0) {
-                score += clickValue;
-                energy -= clickValue;
-                // Get coordinates relative to the document for touch events
-                const x = event.clientX || event.touches[0].clientX;
-                const y = event.clientY || event.touches[0].clientY;
-                showFloatingNumber('+1', x, y);
-                updateScore();
-                updateEnergy();
-            } else {
-                showNotification('Not enough energy!');
-                stopClicking();
-            }
-        }, 100);
+document.getElementById('clicker').addEventListener('click', () => {
+    if ((energy - 1) > 0) {
+        score += clickValue;
+        energy -= 1;
+        updateScore();
+        updateEnergy();
+    } else {
+        showNotification('Not enough energy!');
     }
-}
-
-function stopClicking() {
-    clearInterval(clickInterval);
-    clickInterval = null;
-}
-
-function showFloatingNumber(text, x, y) {
-    const floatingNumber = document.createElement('div');
-    floatingNumber.className = 'floating-number';
-    floatingNumber.textContent = text;
-    document.body.appendChild(floatingNumber);
-
-    floatingNumber.style.left = `${x}px`;
-    floatingNumber.style.top = `${y}px`;
-
-    setTimeout(() => {
-        floatingNumber.remove();
-    }, 1000); // Remove after the animation ends
-}
+});
 
 document.querySelectorAll('.buy').forEach((button, index) => {
     button.addEventListener('click', () => {
-        if (!button.disabled) {
-            const upgrade = upgrades[index];
-            if (score >= upgrade.cost) {
-                score -= upgrade.cost;
-                if (upgrade.type === 'click') {
-                    clickValue += upgrade.value;
-                } else if (upgrade.type === 'autoClicker') {
-                    if (!autoClicker) {
-                        autoClicker = true;
-                        autoClickerInterval = setInterval(() => {
-                            score += clickValue;
-                            updateScore();
-                        }, 1000);
-                    }
+        const upgrade = upgrades[index];
+        if (score >= upgrade.cost) {
+            score -= upgrade.cost;
+            if (upgrade.type === 'click') {
+                clickValue += upgrade.value;
+            } else if (upgrade.type === 'autoClicker') {
+                if (!autoClicker) {
+                    autoClicker = true;
+                    autoClickerInterval = setInterval(() => {
+                        score += clickValue;
+                        updateScore();
+                    }, 1000);
                 }
-                upgrade.bought += 1;
-                upgrade.cost = Math.floor(upgrade.cost * upgrade.multiplier);
-                document.querySelector(`#upgrade${index + 1} .cost`).textContent = `(Cost: ${upgrade.cost})`;
-                updateScore();
-                // Disable the button briefly to prevent rapid clicking
-                button.disabled = true;
-                setTimeout(() => {
-                    button.disabled = false;
-                }, 200); // Re-enable after 200ms
-            } else {
-                showNotification('Not enough clicks!');
             }
+            upgrade.bought += 1;
+            upgrade.cost = Math.floor(upgrade.cost * upgrade.multiplier);
+            document.querySelector(`#upgrade${index + 1} .cost`).textContent = `(Cost: ${upgrade.cost})`;
+            updateScore();
+        } else {
+            showNotification('Not enough clicks!');
         }
     });
 });
@@ -229,6 +181,11 @@ document.getElementById('reset').addEventListener('click', () => {
         resetGame();
     }
 });
+
+document.getElementById('clicker').addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
 
 window.onload = () => {
     loadGame();
