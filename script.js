@@ -182,6 +182,11 @@ document.getElementById('reset').addEventListener('click', () => {
     }
 });
 
+document.getElementById('clicker').addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+
 window.onload = () => {
     loadGame();
 };
