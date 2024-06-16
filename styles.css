@@ -47,14 +47,18 @@ button {
 
 button:hover {
     background-color: #00cc00;
+    outline: none; /* Убираем синюю рамку при фокусе */
 }
 button img {
     display: block; /* Убираем отступы вокруг изображения */
+    outline: none; /* Убираем синюю рамку при фокусе */
 }
 button:active {
     background-color: transparent; /* Устанавливаем прозрачный фон при активации кнопки */
+    outline: none; /* Убираем синюю рамку при фокусе */
 }
 button:focus {
+    outline: none; /* Убираем синюю рамку при фокусе */
     outline: none; /* Убираем синюю рамку при фокусе */
 }
 
