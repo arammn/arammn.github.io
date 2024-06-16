@@ -40,6 +40,7 @@ button {
     border-radius: 5px;
     cursor: pointer;
     color: #121212;
+    cursor: pointer; /* Курсор "указатель" при наведении */
     outline: none; /* Disable the default outline */
     user-select: none; /* Disable text selection on button */
 }
@@ -47,9 +48,14 @@ button {
 button:hover {
     background-color: #00cc00;
 }
-
+button img {
+    display: block; /* Убираем отступы вокруг изображения */
+}
 button:active {
     background-color: transparent; /* Устанавливаем прозрачный фон при активации кнопки */
+}
+button:focus {
+    outline: none; /* Убираем синюю рамку при фокусе */
 }
 
 
