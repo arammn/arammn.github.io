@@ -44,25 +44,28 @@ function updateRank() {
     document.getElementById('max-energy').textContent = maxEnergy;
 }
 
-document.getElementById('clicker').addEventListener('mousedown', (event) => {
-    startClicking(event);
-});
+// Add event listeners for both mouse and touch events
+document.getElementById('clicker').addEventListener('mousedown', startClicking);
+document.getElementById('clicker').addEventListener('touchstart', startClicking);
 
-document.getElementById('clicker').addEventListener('mouseup', () => {
-    stopClicking();
-});
+document.getElementById('clicker').addEventListener('mouseup', stopClicking);
+document.getElementById('clicker').addEventListener('touchend', stopClicking);
 
-document.getElementById('clicker').addEventListener('mouseleave', () => {
-    stopClicking();
-});
+document.getElementById('clicker').addEventListener('mouseleave', stopClicking);
+document.getElementById('clicker').addEventListener('touchcancel', stopClicking);
 
 function startClicking(event) {
+    event.preventDefault(); // Prevent default action for touch events
+
     if (!clickInterval) {
         clickInterval = setInterval(() => {
             if (energy - clickValue >= 0) {
                 score += clickValue;
-                energy -= 1;
-                showFloatingNumber('+1', event.clientX, event.clientY);
+                energy -= clickValue;
+                // Get coordinates relative to the document for touch events
+                const x = event.clientX || event.touches[0].clientX;
+                const y = event.clientY || event.touches[0].clientY;
+                showFloatingNumber('+1', x, y);
                 updateScore();
                 updateEnergy();
             } else {
