@@ -44,9 +44,9 @@ function updateRank() {
 }
 
 document.getElementById('clicker').addEventListener('click', () => {
-    if ((energy - 10) > 0) {
+    if ((energy - 1) > 0) {
         score += clickValue;
-        energy -= 10;
+        energy -= 1;
         updateScore();
         updateEnergy();
     } else {
