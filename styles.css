@@ -70,6 +70,9 @@ button:focus {
     border-radius: 0;
     background: none;
     margin-bottom: 20px;
+    -webkit-user-select: none; /* Disable text selection on image */
+    -webkit-touch-callout: none; /* Disable callout on long press */
+    -webkit-tap-highlight-color: transparent; /* Prevent blue highlight on tap */
 }
 
 #clicker img {
