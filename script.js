@@ -3,6 +3,7 @@ let clickValue = 1;
 let autoClicker = false;
 let autoClickerInterval;
 let energy = 1000;
+let vib = 0;
 let maxEnergy = 1000;
 let highestRank = 'Novice';
 const ranks = [
@@ -49,6 +50,12 @@ document.getElementById('clicker').addEventListener('click', () => {
         energy -= 1;
         updateScore();
         updateEnergy();
+        if (navigator.vibrate) {
+            navigator.vibrate(200); // Вибрация на 200 миллисекунд
+        } else if(vib == 0){
+            showNotification("Ваше устройство не поддерживает вибрацию.");
+            vib += 1
+        }
     } else {
         showNotification('Not enough energy!');
     }
