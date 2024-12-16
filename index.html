@@ -2,49 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Crypto Clicker</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реклама</title>
+    <!-- Google AdSense Code -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7141809047261435"
+        crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #6200ea;
+            color: white;
+            padding: 15px 0;
+        }
+        header h1 {
+            margin: 0;
+        }
+        .ad-container {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Crypto Clicker</h1>
-        <div class="scoreboard">
-            Clicks: <span id="score">0</span>
-        </div>
-        <div class="rank">
-            Rank: <span id="rank">Novice</span>
-        </div>
-        <div class="energy">
-            Energy: <span id="energy">1000</span>/<span id="max-energy">1000</span>
-        </div>
-        <button id="clicker"><img src="crypto_icon.png" alt="Crypto"></button>
-        <div class="earn-section">
-            <button id="open-shop">Open Shop</button>
-        </div>
-        <div class="notification" id="notification"></div>
-        <button id="reset">Reset all</button>
-    </div>
-    
-    <div id="shop-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Shop</h2>
-            <div class="store">
-                <div class="store-item" id="upgrade1">
-                    <span>Upgrade Click</span>
-                    <span class="cost">(Cost: 10)</span>
-                    <button class="buy" data-upgrade="1">Buy</button>
-                </div>
-                <div class="store-item" id="upgrade2">
-                    <span>Auto Clicker</span>
-                    <span class="cost">(Cost: 50)</span>
-                    <button class="buy" data-upgrade="2">Buy</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <header>
+        <h1>Добро пожаловать!</h1>
+        <p>Смотрите рекламу и зарабатывайте.</p>
+    </header>
 
-    <script src="script.js"></script>
+    <div class="container">
+        <div class="ad-container">
+            <!-- Google AdSense Ad Block -->
+            <ins class="adsbygoogle"
+                style="display:block"
+                data-ad-client="ca-pub-7141809047261435"
+                data-ad-slot="1234567890"
+                data-ad-format="auto"
+                data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+
+        <p>Кликните по рекламе, чтобы поддержать наш проект.</p>
+    </div>
 </body>
 </html>
