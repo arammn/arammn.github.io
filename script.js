@@ -8,13 +8,13 @@ document.querySelectorAll('.add-to-cart').forEach(button => {
     button.addEventListener('click', function() {
         const card = this.closest('.product-card');
         const product = {
-            id: Date.now(), // Уникальный идентификатор
+            id: Date.now().toString(), // Уникальный идентификатор
             name: card.querySelector('h3').textContent,
             price: parseInt(card.querySelector('.price').textContent),
             image: card.querySelector('img').src,
             quantity: 1
         };
-        
+
         addToCart(product);
         showNotification('Товар добавлен в корзину');
     });
@@ -23,20 +23,21 @@ document.querySelectorAll('.add-to-cart').forEach(button => {
 // Add to cart function
 function addToCart(product) {
     const existingItem = cartItems.find(item => item.name === product.name);
-    
+
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
         cartItems.push(product);
     }
-    
+
     updateCartCount();
     saveCartToLocalStorage();
 }
 
 // Update cart count
 function updateCartCount() {
-    cartCount.textContent = cartItems.reduce((total, item) => total + item.quantity, 0);
+    const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
+    cartCount.textContent = totalItems;
 }
 
 // Save cart to localStorage
@@ -57,53 +58,74 @@ function loadCartFromLocalStorage() {
 function showCartModal() {
     const modal = document.createElement('div');
     modal.className = 'cart-modal';
-    
+
     const modalContent = document.createElement('div');
     modalContent.className = 'cart-modal-content';
-    
+
     const closeBtn = document.createElement('button');
     closeBtn.className = 'cart-modal-close';
     closeBtn.innerHTML = '×';
     closeBtn.onclick = () => modal.remove();
-    
+
     const title = document.createElement('h2');
     title.textContent = 'Корзина';
-    
+
     const cartList = document.createElement('div');
     cartList.className = 'cart-items';
-    
+
     let total = 0;
     cartItems.forEach(item => {
         const itemElement = document.createElement('div');
         itemElement.className = 'cart-item';
         total += item.price * item.quantity;
-        
+
         itemElement.innerHTML = `
             <img src="${item.image}" alt="${item.name}" class="cart-item-image">
             <div class="cart-item-details">
                 <h3>${item.name}</h3>
                 <p>${item.price} ₽ × ${item.quantity}</p>
+                <div class="quantity-controls">
+                    <button onclick="updateQuantity('${item.id}', -1)">-</button>
+                    <span>${item.quantity}</span>
+                    <button onclick="updateQuantity('${item.id}', 1)">+</button>
+                </div>
             </div>
             <button class="remove-item" onclick="removeFromCart('${item.id}')">×</button>
         `;
-        
+
         cartList.appendChild(itemElement);
     });
-    
+
     const totalElement = document.createElement('div');
     totalElement.className = 'cart-total';
     totalElement.innerHTML = `
         <h3>Итого: ${total} ₽</h3>
         <button onclick="checkout()" class="checkout-btn">Оформить заказ</button>
     `;
-    
+
     modalContent.appendChild(closeBtn);
     modalContent.appendChild(title);
     modalContent.appendChild(cartList);
     modalContent.appendChild(totalElement);
     modal.appendChild(modalContent);
-    
+
     document.body.appendChild(modal);
+}
+
+// Update quantity
+function updateQuantity(productId, change) {
+    const item = cartItems.find(item => item.id === productId);
+    if (item) {
+        item.quantity = Math.max(1, item.quantity + change);
+        updateCartCount();
+        saveCartToLocalStorage();
+
+        const modal = document.querySelector('.cart-modal');
+        if (modal) {
+            modal.remove();
+            showCartModal();
+        }
+    }
 }
 
 // Remove item from cart
@@ -111,6 +133,7 @@ function removeFromCart(productId) {
     cartItems = cartItems.filter(item => item.id !== productId);
     updateCartCount();
     saveCartToLocalStorage();
+
     const modal = document.querySelector('.cart-modal');
     if (modal) {
         modal.remove();
@@ -124,8 +147,7 @@ function checkout() {
         showNotification('Корзина пуста');
         return;
     }
-    
-    // Здесь можно добавить логику оформления заказа
+
     showNotification('Заказ оформлен! Спасибо за покупку!');
     cartItems = [];
     updateCartCount();
@@ -133,6 +155,38 @@ function checkout() {
     
     const modal = document.querySelector('.cart-modal');
     if (modal) modal.remove();
+    // Формируем данные заказа
+    const orderData = {
+        items: cartItems,
+        total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        date: new Date().toLocaleString(),
+        email: 'aramm6013@gmail.com'
+    };
+    // Отправляем данные на сервер
+    fetch('https://formspree.io/f/aramm6013@gmail.com', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => {
+        if (response.ok) {
+            showNotification('Заказ оформлен! Спасибо за покупку!');
+            cartItems = [];
+            updateCartCount();
+            saveCartToLocalStorage();
+            
+            const modal = document.querySelector('.cart-modal');
+            if (modal) modal.remove();
+        } else {
+            showNotification('Произошла ошибка при оформлении заказа');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Произошла ошибка при оформлении заказа');
+    });
 }
 
 // Show notification
@@ -157,31 +211,6 @@ function showNotification(message) {
         notification.style.animation = 'slideOut 0.3s ease-out';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
-
-        fetch('https://formspree.io/f/aramm6013@gmail.com', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderData)
-    })
-    .then(response => {
-        if (response.ok) {
-            showNotification('Заказ оформлен! Спасибо за покупку!');
-            cartItems = [];
-            updateCartCount();
-            saveCartToLocalStorage();
-            
-            const modal = document.querySelector('.cart-modal');
-            if (modal) modal.remove();
-        } else {
-            showNotification('Произошла ошибка при оформлении заказа');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showNotification('Произошла ошибка при оформлении заказа');
-    });
 }
 
 // Add notification animations to stylesheet
@@ -236,4 +265,5 @@ document.querySelectorAll('.product-card').forEach(card => {
     card.style.transform = 'translateY(20px)';
     card.style.transition = 'opacity 0.5s, transform 0.5s';
     observer.observe(card);
+});
 });
