@@ -157,6 +157,31 @@ function showNotification(message) {
         notification.style.animation = 'slideOut 0.3s ease-out';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+
+        fetch('https://formspree.io/f/aramm6013@gmail.com', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => {
+        if (response.ok) {
+            showNotification('Заказ оформлен! Спасибо за покупку!');
+            cartItems = [];
+            updateCartCount();
+            saveCartToLocalStorage();
+            
+            const modal = document.querySelector('.cart-modal');
+            if (modal) modal.remove();
+        } else {
+            showNotification('Произошла ошибка при оформлении заказа');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Произошла ошибка при оформлении заказа');
+    });
 }
 
 // Add notification animations to stylesheet
