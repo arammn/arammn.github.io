@@ -3,87 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Магазин Голды Standoff 2</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <title>Перенаправление...</title>
+    <script>
+        window.location.href = "http://armgoldshop.rf.gd";
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Standoff 2 Голда</h1>
-        <div class="product-list" id="products"></div>
-        <div class="cart">
-            <h2>Корзина</h2>
-            <div id="cart-items"></div>
-            <p id="total-price">Итого: 0 ₽</p>
-            <button id="checkout-btn" onclick="checkout()">Оформить заказ</button>
-        </div>
-    </div>
-
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-
-        let cart = [];
-        let products = [
-            { id: 1, name: "100 Голды", price: 50 },
-            { id: 2, name: "500 Голды", price: 200 },
-            { id: 3, name: "1000 Голды", price: 350 },
-            { id: 4, name: "5000 Голды", price: 1600 }
-        ];
-
-        function renderProducts() {
-            let productsDiv = document.getElementById("products");
-            productsDiv.innerHTML = "";
-            products.forEach(product => {
-                let div = document.createElement("div");
-                div.className = "product";
-                div.innerHTML = `
-                    <h3>${product.name}</h3>
-                    <p>Цена: ${product.price} ₽</p>
-                    <button onclick="addToCart(${product.id})">Купить</button>
-                `;
-                productsDiv.appendChild(div);
-            });
-        }
-
-        function addToCart(id) {
-            let product = products.find(p => p.id === id);
-            cart.push(product);
-            updateCart();
-        }
-
-        function updateCart() {
-            let cartDiv = document.getElementById("cart-items");
-            let totalPrice = document.getElementById("total-price");
-            cartDiv.innerHTML = "";
-            let total = 0;
-
-            cart.forEach((product, index) => {
-                let div = document.createElement("div");
-                div.className = "cart-item";
-                div.innerHTML = `${product.name} - ${product.price} ₽ <button onclick="removeFromCart(${index})">❌</button>`;
-                cartDiv.appendChild(div);
-                total += product.price;
-            });
-
-            totalPrice.innerText = `Итого: ${total} ₽`;
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCart();
-        }
-
-        function checkout() {
-            if (cart.length === 0) {
-                alert("Корзина пуста!");
-                return;
-            }
-            tg.sendData(JSON.stringify(cart));
-            tg.close();
-        }
-
-        renderProducts();
-    </script>
+    <p>Если перенаправление не произошло, нажмите <a href="http://armgoldshop.rf.gd">здесь</a>.</p>
 </body>
 </html>
