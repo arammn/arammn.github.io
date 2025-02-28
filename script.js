@@ -1,1 +1,1 @@
-window.location.replace("http://armgoldshop.rf.gd");
+window.location.replace("https://youtube.com");
