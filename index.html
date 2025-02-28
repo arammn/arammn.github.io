@@ -3,82 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CandleHaven - Магазин свечей</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Магазин</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .product {
+            border: 1px solid #ddd;
+            margin: 10px;
+            padding: 10px;
+            display: inline-block;
+        }
+        button {
+            padding: 10px;
+            background: #0088cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <a href="/" class="logo">CandleHaven</a>
-            <div class="nav-links">
-                <a href="#" class="nav-link">Каталог</a>
-                <a href="#" class="nav-link">О нас</a>
-                <a href="#" class="nav-link">Контакты</a>
-                <button class="cart-btn">
-                    <span class="cart-icon">🛒</span>
-                    <span class="cart-count">0</span>
-                </button>
-            </div>
-        </div>
-    </nav>
+    <h2>Добро пожаловать в магазин!</h2>
+    <div id="products"></div>
+    <button onclick="checkout()">Оформить заказ</button>
 
-    <main>
-        <section class="hero">
-            <div class="hero-content">
-                <h1>Создайте атмосферу уюта</h1>
-                <p>Откройте для себя коллекцию ароматических свечей ручной работы</p>
-            </div>
-        </section>
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Разворачиваем Mini App
 
-         <section class="products">
-            <div class="container">
-                <h2>Популярные товары</h2>
-                <div class="product-grid">
-                    <div class="product-card">
-                        <img src="https://images.unsplash.com/photo-1603006905003-be475563bc59?w=800" alt="Лавандовый сон">
-                        <h3>Лавандовый сон</h3>
-                        <p>Успокаивающий аромат лаванды для безмятежного отдыха</p>
-                        <div class="price">1200</div>
-                        <button class="add-to-cart">В корзину</button>
-                    </div>
-                    <div class="product-card">
-                        <img src="https://images.unsplash.com/photo-1602874801007-bd36c376cd00?w=800" alt="Ванильное облако">
-                        <h3>Ванильное облако</h3>
-                        <p>Теплый и уютный аромат ванили для создания особой атмосферы</p>
-                        <div class="price">1400</div>
-                        <button class="add-to-cart">В корзину</button>
-                    </div>
-                    <div class="product-card">
-                        <img src="https://images.unsplash.com/photo-1596433809252-901acb55fc63?w=800" alt="Морской бриз">
-                        <h3>Морской бриз</h3>
-                        <p>Свежий аромат моря и прибрежных трав</p>
-                        <div class="price">1300</div>
-                        <button class="add-to-cart">В корзину</button>
-                    </div>
-                </div>
-            </div>
-        </section>
+        let cart = [];
+        let products = [
+            { id: 1, name: "Товар 1", price: 500 },
+            { id: 2, name: "Товар 2", price: 1000 },
+            { id: 3, name: "Товар 3", price: 1500 }
+        ];
 
-        <section class="features">
-            <div class="container">
-                <div class="features-grid">
-                    <div class="feature">
-                        <h3>Ручная работа</h3>
-                        <p>Каждая свеча создана с любовью и вниманием к деталям</p>
-                    </div>
-                    <div class="feature">
-                        <h3>Натуральные компоненты</h3>
-                        <p>Используем только экологически чистые материалы</p>
-                    </div>
-                    <div class="feature">
-                        <h3>Быстрая доставка</h3>
-                        <p>Доставляем по всей России в течение 1-3 дней</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+        let productsDiv = document.getElementById("products");
+        products.forEach(product => {
+            let div = document.createElement("div");
+            div.className = "product";
+            div.innerHTML = `<h3>${product.name}</h3><p>Цена: ${product.price} ₽</p>
+                <button onclick="addToCart(${product.id})">Добавить в корзину</button>`;
+            productsDiv.appendChild(div);
+        });
 
-    <script src="script.js"></script>
+        function addToCart(id) {
+            let product = products.find(p => p.id === id);
+            cart.push(product);
+            tg.MainButton.text = `Корзина (${cart.length})`;
+            tg.MainButton.show();
+        }
+
+        function checkout() {
+            tg.sendData(JSON.stringify(cart)); // Отправляем данные в бота
+            tg.close();
+        }
+    </script>
 </body>
 </html>
