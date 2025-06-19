@@ -3,12 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Перенаправление...</title>
-    <script>
-        window.location.href = "http://armgoldshop.rf.gd";
-    </script>
+    <title>AdsGram - Зарабатывай на рекламе</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .balance-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .balance-amount {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 15px 0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .ad-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ad-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+        
+        .ad-content {
+            padding: 20px;
+            color: #333;
+        }
+        
+        .ad-title {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #2575fc;
+        }
+        
+        .ad-description {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .timer {
+            font-size: 24px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .btn {
+            background: #ffcc00;
+            color: #333;
+            border: none;
+            padding: 16px 32px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .history {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .history h2 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .history-item {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        footer {
+            margin-top: 30px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            animation: fadeInOut 3s forwards;
+            z-index: 1000;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; top: 0; }
+            10% { opacity: 1; top: 20px; }
+            90% { opacity: 1; top: 20px; }
+            100% { opacity: 0; top: 0; }
+        }
+    </style>
 </head>
 <body>
-    <p>Если перенаправление не произошло, нажмите <a href="http://armgoldshop.rf.gd">здесь</a>.</p>
+    <div class="container">
+        <header>
+            <h1>AdsGram</h1>
+            <p>Зарабатывай за просмотр рекламы</p>
+        </header>
+        
+        <div class="balance-card">
+            <h2>Ваш баланс</h2>
+            <div class="balance-amount">0 ₽</div>
+            <p>1 просмотр = 0.5 ₽</p>
+        </div>
+        
+        <div class="ad-container" id="adContainer">
+            <img src="https://via.placeholder.com/500x250?text=Рекламное+место" class="ad-image" id="adImage">
+            <div class="ad-content">
+                <h3 class="ad-title" id="adTitle">Загружаем рекламу...</h3>
+                <p class="ad-description" id="adDescription">Пожалуйста, подождите</p>
+            </div>
+        </div>
+        
+        <div class="timer" id="timer">00:00</div>
+        
+        <button class="btn" id="watchBtn" disabled>Начать просмотр</button>
+        
+        <div class="history">
+            <h2>История операций</h2>
+            <div id="historyList">
+                <div class="history-item">Здесь будет история ваших заработков</div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Проект AdsGram &copy; 2023 | Для вывода средств необходим минимум 50 ₽</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.MainButton.setText("Вывести средства");
+        
+        // Данные пользователя
+        let userData = {
+            id: tg.initDataUnsafe.user?.id || 0,
+            balance: 0,
+            adCount: 0
+        };
+        
+        // Элементы интерфейса
+        const elements = {
+            balance: document.querySelector('.balance-amount'),
+            adImage: document.getElementById('adImage'),
+            adTitle: document.getElementById('adTitle'),
+            adDescription: document.getElementById('adDescription'),
+            timer: document.getElementById('timer'),
+            watchBtn: document.getElementById('watchBtn'),
+            historyList: document.getElementById('historyList')
+        };
+        
+        // Рекламные объявления
+        const ads = [
+            {
+                title: "Новый iPhone 15 Pro!",
+                description: "Супермощный процессор и революционная камера. Закажи сейчас со скидкой 10%!",
+                image: "https://via.placeholder.com/500x250/007AFF/FFFFFF?text=iPhone+15+Pro"
+            },
+            {
+                title: "Путешествие мечты",
+                description: "Отдых на Мальдивах по специальной цене! Только до конца месяца.",
+                image: "https://via.placeholder.com/500x250/00C853/FFFFFF?text=Мальдивы"
+            },
+            {
+                title: "Курс по программированию",
+                description: "Стань разработчиком за 6 месяцев. Гарантия трудоустройства!",
+                image: "https://via.placeholder.com/500x250/FF5722/FFFFFF?text=Курсы+Программирования"
+            },
+            {
+                title: "Электромобиль Tesla",
+                description: "Новый Model Y с увеличенным запасом хода. Тест-драйв уже сегодня!",
+                image: "https://via.placeholder.com/500x250/000000/FFFFFF?text=Tesla+Model+Y"
+            }
+        ];
+        
+        // Переменные таймера
+        let countdown;
+        let secondsLeft = 0;
+        
+        // Инициализация приложения
+        function initApp() {
+            updateUserInfo();
+            loadRandomAd();
+            setupEventListeners();
+            
+            // Показываем кнопку вывода если баланс > 50
+            if(userData.balance >= 50) {
+                tg.MainButton.show();
+            }
+        }
+        
+        // Обновление информации о пользователе
+        function updateUserInfo() {
+            elements.balance.textContent = `${userData.balance.toFixed(2)} ₽`;
+        }
+        
+        // Загрузка случайного рекламного объявления
+        function loadRandomAd() {
+            const ad = ads[Math.floor(Math.random() * ads.length)];
+            elements.adImage.src = ad.image;
+            elements.adTitle.textContent = ad.title;
+            elements.adDescription.textContent = ad.description;
+        }
+        
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Кнопка просмотра рекламы
+            elements.watchBtn.addEventListener('click', startWatching);
+            
+            // Кнопка вывода средств
+            tg.MainButton.onClick(() => {
+                tg.showPopup({
+                    title: 'Вывод средств',
+                    message: `Вы можете вывести ${userData.balance.toFixed(2)} ₽ на ваш кошелек`,
+                    buttons: [
+                        {type: 'default', text: 'На карту'},
+                        {type: 'destructive', text: 'На Qiwi'},
+                        {type: 'cancel', text: 'Отмена'}
+                    ]
+                }, (buttonId) => {
+                    if(buttonId === 0 || buttonId === 1) {
+                        showNotification(`Запрос на вывод ${userData.balance.toFixed(2)} ₽ отправлен!`);
+                        userData.balance = 0;
+                        updateUserInfo();
+                        addHistoryItem(`Запрос вывода средств`);
+                        tg.MainButton.hide();
+                    }
+                });
+            });
+        }
+        
+        // Запуск просмотра рекламы
+        function startWatching() {
+            if(countdown) return;
+            
+            elements.watchBtn.disabled = true;
+            elements.watchBtn.textContent = "Смотрю...";
+            secondsLeft = 10;
+            
+            countdown = setInterval(() => {
+                secondsLeft--;
+                elements.timer.textContent = `00:${secondsLeft.toString().padStart(2, '0')}`;
+                
+                if(secondsLeft <= 0) {
+                    finishWatching();
+                }
+            }, 1000);
+        }
+        
+        // Завершение просмотра рекламы
+        function finishWatching() {
+            clearInterval(countdown);
+            countdown = null;
+            
+            // Начисление денег
+            const earned = 0.5;
+            userData.balance += earned;
+            userData.adCount++;
+            
+            // Обновление интерфейса
+            updateUserInfo();
+            addHistoryItem(`Просмотр рекламы: +${earned.toFixed(2)} ₽`);
+            showNotification(`+${earned.toFixed(2)} ₽ зачислено!`);
+            
+            // Сброс таймера
+            elements.timer.textContent = "00:00";
+            elements.watchBtn.textContent = "Смотреть следующую рекламу";
+            elements.watchBtn.disabled = false;
+            
+            // Загрузка новой рекламы
+            setTimeout(() => {
+                loadRandomAd();
+            }, 1000);
+            
+            // Показ кнопки вывода если достигнут минимум
+            if(userData.balance >= 50 && !tg.MainButton.isVisible) {
+                tg.MainButton.show();
+            }
+        }
+        
+        // Добавление записи в историю
+        function addHistoryItem(text) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `<strong>${timeString}</strong> - ${text}`;
+            
+            elements.historyList.prepend(item);
+        }
+        
+        // Показать уведомление
+        function showNotification(text) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = text;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Активация кнопки после загрузки
+        setTimeout(() => {
+            elements.watchBtn.textContent = "Смотреть рекламу";
+            elements.watchBtn.disabled = false;
+        }, 2000);
+        
+        // Запуск приложения
+        initApp();
+    </script>
 </body>
 </html>
