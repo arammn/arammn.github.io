@@ -6,35 +6,94 @@
     <title>AdsGram - Зарабатывай на рекламе</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --accent: #ffcc00;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #4CAF50;
+            --danger: #f44336;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--light);
             min-height: 100vh;
             padding: 20px;
+            line-height: 1.6;
         }
         
         .container {
             max-width: 500px;
             margin: 0 auto;
-            text-align: center;
+            padding-bottom: 80px;
         }
         
         header {
+            display: flex;
+            align-items: center;
             padding: 20px 0;
+            margin-bottom: 20px;
             border-bottom: 1px solid rgba(255,255,255,0.2);
-            margin-bottom: 30px;
         }
         
-        h1 {
-            font-size: 28px;
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 24px;
+            color: var(--dark);
+        }
+        
+        .header-text h1 {
+            font-size: 24px;
             margin-bottom: 5px;
+        }
+        
+        .header-text p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            flex: 1;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
         }
         
         .balance-card {
@@ -43,19 +102,31 @@
             border-radius: 20px;
             padding: 25px;
             margin: 20px 0;
+            text-align: center;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .balance-label {
+            font-size: 16px;
+            margin-bottom: 10px;
         }
         
         .balance-amount {
             font-size: 48px;
             font-weight: bold;
-            margin: 15px 0;
+            margin: 10px 0;
             text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            color: var(--accent);
+        }
+        
+        .balance-subtext {
+            font-size: 14px;
+            opacity: 0.9;
         }
         
         .ad-container {
-            background: white;
-            border-radius: 15px;
+            background: var(--light);
+            border-radius: 20px;
             overflow: hidden;
             margin: 30px 0;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -65,35 +136,60 @@
             width: 100%;
             height: 250px;
             object-fit: cover;
+            background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
         }
         
         .ad-content {
             padding: 20px;
-            color: #333;
+            color: var(--dark);
         }
         
         .ad-title {
             font-size: 22px;
             margin-bottom: 10px;
-            color: #2575fc;
+            color: var(--secondary);
         }
         
         .ad-description {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             line-height: 1.5;
+            color: #4b5563;
+        }
+        
+        .ad-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #6b7280;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .timer-container {
+            text-align: center;
+            margin: 15px 0;
         }
         
         .timer {
-            font-size: 24px;
-            margin: 20px 0;
+            font-size: 32px;
             font-weight: bold;
+            margin: 10px 0;
+            background: rgba(0, 0, 0, 0.2);
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 50px;
+        }
+        
+        .timer-label {
+            font-size: 16px;
+            opacity: 0.9;
         }
         
         .btn {
-            background: #ffcc00;
-            color: #333;
+            background: var(--accent);
+            color: var(--dark);
             border: none;
-            padding: 16px 32px;
+            padding: 18px 32px;
             font-size: 18px;
             border-radius: 50px;
             cursor: pointer;
@@ -101,40 +197,116 @@
             width: 100%;
             transition: all 0.3s;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: block;
+            text-align: center;
+            text-decoration: none;
         }
         
         .btn:disabled {
             background: #cccccc;
             cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none;
         }
         
         .btn:hover:not(:disabled) {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: #ffd633;
         }
         
-        .history {
+        .section {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            border-radius: 20px;
             padding: 20px;
-            margin-top: 30px;
-            text-align: left;
+            margin: 25px 0;
         }
         
-        .history h2 {
-            margin-bottom: 15px;
+        .section-title {
             font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         
         .history-item {
-            padding: 10px 0;
+            padding: 12px 0;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
         }
         
-        footer {
-            margin-top: 30px;
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-date {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .history-amount {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .referral-container {
+            display: flex;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .referral-input {
+            flex: 1;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 10px 0 0 10px;
+            padding: 12px 15px;
+            color: white;
             font-size: 14px;
-            opacity: 0.8;
+        }
+        
+        .referral-btn {
+            background: var(--accent);
+            color: var(--dark);
+            border: none;
+            padding: 0 20px;
+            border-radius: 0 10px 10px 0;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .withdraw-methods {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .method-card {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .method-card:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .method-card.active {
+            background: rgba(255,255,255,0.25);
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+        
+        .method-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
         }
         
         .notification {
@@ -142,12 +314,92 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #4CAF50;
+            background: var(--success);
             color: white;
             padding: 15px 30px;
             border-radius: 50px;
             animation: fadeInOut 3s forwards;
             z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .tab-container {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: var(--accent);
+            color: var(--dark);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn.active {
+            opacity: 1;
+            color: var(--accent);
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .withdraw-input {
+            width: 100%;
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            padding: 15px;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .withdraw-input:focus {
+            outline: none;
+            border-color: var(--accent);
         }
         
         @keyframes fadeInOut {
@@ -156,67 +408,256 @@
             90% { opacity: 1; top: 20px; }
             100% { opacity: 0; top: 0; }
         }
+        
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .ad-reward {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--dark);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 480px) {
+            .balance-amount {
+                font-size: 40px;
+            }
+            
+            .ad-image {
+                height: 200px;
+            }
+            
+            .timer {
+                font-size: 28px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>AdsGram</h1>
-            <p>Зарабатывай за просмотр рекламы</p>
+            <div class="logo">A</div>
+            <div class="header-text">
+                <h1>AdsGram</h1>
+                <p>Зарабатывай на просмотре рекламы</p>
+            </div>
         </header>
         
-        <div class="balance-card">
-            <h2>Ваш баланс</h2>
-            <div class="balance-amount">0 ₽</div>
-            <p>1 просмотр = 0.5 ₽</p>
-        </div>
-        
-        <div class="ad-container" id="adContainer">
-            <img src="https://via.placeholder.com/500x250?text=Рекламное+место" class="ad-image" id="adImage">
-            <div class="ad-content">
-                <h3 class="ad-title" id="adTitle">Загружаем рекламу...</h3>
-                <p class="ad-description" id="adDescription">Пожалуйста, подождите</p>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="adsViewed">0</div>
+                <div class="stat-label">Просмотров</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalEarned">0 ₽</div>
+                <div class="stat-label">Заработано</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="referrals">0</div>
+                <div class="stat-label">Рефералов</div>
             </div>
         </div>
         
-        <div class="timer" id="timer">00:00</div>
+        <div class="tab-container">
+            <div class="tab active" data-tab="earn">Заработок</div>
+            <div class="tab" data-tab="withdraw">Вывод</div>
+            <div class="tab" data-tab="referral">Рефералы</div>
+        </div>
         
-        <button class="btn" id="watchBtn" disabled>Начать просмотр</button>
+        <!-- Вкладка заработка -->
+        <div class="tab-content active" id="earn-tab">
+            <div class="balance-card">
+                <div class="balance-label">Ваш баланс</div>
+                <div class="balance-amount" id="balance">0.00 ₽</div>
+                <div class="balance-subtext">Минимум для вывода: 50 ₽</div>
+                <div class="progress-bar">
+                    <div class="progress" id="balance-progress"></div>
+                </div>
+                <div class="balance-subtext" id="progress-text">0% от минимального вывода</div>
+            </div>
+            
+            <div class="ad-container" id="adContainer">
+                <img src="https://via.placeholder.com/500x250/007AFF/FFFFFF?text=Загружаем+рекламу..." class="ad-image" id="adImage">
+                <div class="ad-content">
+                    <h3 class="ad-title" id="adTitle">Ожидайте загрузки рекламы</h3>
+                    <p class="ad-description" id="adDescription">Сейчас мы подберем для вас подходящее рекламное предложение</p>
+                    <div class="ad-info">
+                        <span>Реклама · @adsgram_ai</span>
+                        <span class="ad-reward">+0.50 ₽</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timer-container">
+                <div class="timer-label">До награды осталось:</div>
+                <div class="timer" id="timer">00:20</div>
+            </div>
+            
+            <button class="btn" id="watchBtn" disabled>Начать просмотр</button>
+        </div>
         
-        <div class="history">
-            <h2>История операций</h2>
-            <div id="historyList">
-                <div class="history-item">Здесь будет история ваших заработков</div>
+        <!-- Вкладка вывода -->
+        <div class="tab-content" id="withdraw-tab">
+            <div class="section">
+                <h2 class="section-title">Вывод средств</h2>
+                <p>Ваш текущий баланс: <strong id="withdraw-balance">0.00 ₽</strong></p>
+                
+                <div class="withdraw-methods">
+                    <div class="method-card active" data-method="card">
+                        <div class="method-icon">💳</div>
+                        <div>Банковская карта</div>
+                    </div>
+                    <div class="method-card" data-method="qiwi">
+                        <div class="method-icon">🥝</div>
+                        <div>QIWI Кошелек</div>
+                    </div>
+                    <div class="method-card" data-method="yoomoney">
+                        <div class="method-icon">💰</div>
+                        <div>ЮMoney</div>
+                    </div>
+                </div>
+                
+                <input type="text" class="withdraw-input" id="withdrawAccount" placeholder="Введите номер карты/кошелька">
+                <input type="number" class="withdraw-input" id="withdrawAmount" placeholder="Сумма вывода (мин. 50 ₽)" min="50">
+                
+                <button class="btn" id="withdrawBtn">Заказать выплату</button>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">История выплат</h2>
+                <div id="withdrawHistory">
+                    <div class="history-item">
+                        <div>
+                            <div>Вывод на карту **** 1234</div>
+                            <div class="history-date">20.06.2023 14:30</div>
+                        </div>
+                        <div class="history-amount">-100.00 ₽</div>
+                    </div>
+                    <div class="history-item">
+                        <div>
+                            <div>Вывод на QIWI</div>
+                            <div class="history-date">15.06.2023 10:15</div>
+                        </div>
+                        <div class="history-amount">-50.00 ₽</div>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <footer>
-            <p>Проект AdsGram &copy; 2023 | Для вывода средств необходим минимум 50 ₽</p>
-        </footer>
+        <!-- Вкладка рефералов -->
+        <div class="tab-content" id="referral-tab">
+            <div class="section">
+                <h2 class="section-title">Реферальная программа</h2>
+                <p>Приглашайте друзей и получайте <strong>10%</strong> от их заработка!</p>
+                
+                <div class="referral-container">
+                    <input type="text" class="referral-input" id="referralLink" value="https://t.me/adsgram_ai?start=ref12345" readonly>
+                    <button class="referral-btn" id="copyBtn">Копировать</button>
+                </div>
+                
+                <div class="stats-container" style="margin-top: 20px;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="ref-earned">0.00 ₽</div>
+                        <div class="stat-label">Заработано с рефералов</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="ref-count">0</div>
+                        <div class="stat-label">Приглашено друзей</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">Ваши рефералы</h2>
+                <div id="referralsList">
+                    <div class="history-item">
+                        <div>
+                            <div>@username1</div>
+                            <div class="history-date">Зарегистрирован 18.06.2023</div>
+                        </div>
+                        <div>+5.20 ₽</div>
+                    </div>
+                    <div class="history-item">
+                        <div>
+                            <div>@username2</div>
+                            <div class="history-date">Зарегистрирован 15.06.2023</div>
+                        </div>
+                        <div>+12.50 ₽</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <footer>
+        <div class="nav-btn active">
+            <div class="nav-icon">💰</div>
+            <div>Заработок</div>
+        </div>
+        <div class="nav-btn">
+            <div class="nav-icon">📊</div>
+            <div>Статистика</div>
+        </div>
+        <div class="nav-btn">
+            <div class="nav-icon">👥</div>
+            <div>Рефералы</div>
+        </div>
+        <div class="nav-btn">
+            <div class="nav-icon">👤</div>
+            <div>Профиль</div>
+        </div>
+    </footer>
     
     <script>
         // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.MainButton.setText("Вывести средства");
+        tg.enableClosingConfirmation();
         
-        // Данные пользователя
+        // Имитация данных пользователя (в реальном приложении будут запросы к бэкенду)
         let userData = {
-            id: tg.initDataUnsafe.user?.id || 0,
-            balance: 0,
-            adCount: 0
+            id: tg.initDataUnsafe.user?.id || 123456789,
+            balance: 32.50,
+            adCount: 65,
+            totalEarned: 65.00,
+            referrals: 4,
+            refEarned: 17.70
         };
         
         // Элементы интерфейса
         const elements = {
-            balance: document.querySelector('.balance-amount'),
+            balance: document.getElementById('balance'),
+            adsViewed: document.getElementById('adsViewed'),
+            totalEarned: document.getElementById('totalEarned'),
+            referrals: document.getElementById('referrals'),
             adImage: document.getElementById('adImage'),
             adTitle: document.getElementById('adTitle'),
             adDescription: document.getElementById('adDescription'),
             timer: document.getElementById('timer'),
             watchBtn: document.getElementById('watchBtn'),
-            historyList: document.getElementById('historyList')
+            refEarned: document.getElementById('ref-earned'),
+            refCount: document.getElementById('ref-count'),
+            balanceProgress: document.getElementById('balance-progress'),
+            progressText: document.getElementById('progress-text'),
+            withdrawBalance: document.getElementById('withdraw-balance')
         };
         
         // Рекламные объявления
@@ -224,52 +665,74 @@
             {
                 title: "Новый iPhone 15 Pro!",
                 description: "Супермощный процессор и революционная камера. Закажи сейчас со скидкой 10%!",
-                image: "https://via.placeholder.com/500x250/007AFF/FFFFFF?text=iPhone+15+Pro"
+                image: "https://images.unsplash.com/photo-1632582596745-00f0ed34496a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80"
             },
             {
-                title: "Путешествие мечты",
-                description: "Отдых на Мальдивах по специальной цене! Только до конца месяца.",
-                image: "https://via.placeholder.com/500x250/00C853/FFFFFF?text=Мальдивы"
+                title: "Путешествие мечты на Мальдивы",
+                description: "Отдых на райских островах по специальной цене! Только до конца месяца.",
+                image: "https://images.unsplash.com/photo-1590523278191-995cbcda646b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80"
             },
             {
                 title: "Курс по программированию",
                 description: "Стань разработчиком за 6 месяцев. Гарантия трудоустройства!",
-                image: "https://via.placeholder.com/500x250/FF5722/FFFFFF?text=Курсы+Программирования"
+                image: "https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80"
             },
             {
-                title: "Электромобиль Tesla",
+                title: "Электромобиль Tesla Model Y",
                 description: "Новый Model Y с увеличенным запасом хода. Тест-драйв уже сегодня!",
-                image: "https://via.placeholder.com/500x250/000000/FFFFFF?text=Tesla+Model+Y"
+                image: "https://images.unsplash.com/photo-1542362567-b07e54358753?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80"
+            },
+            {
+                title: "Фитнес-браслет Xiaomi Mi Band 7",
+                description: "Следи за своим здоровьем 24/7. Скидка 20% только сегодня!",
+                image: "https://images.unsplash.com/photo-1585123334904-845d60e97b29?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80"
             }
         ];
         
         // Переменные таймера
         let countdown;
-        let secondsLeft = 0;
+        let secondsLeft = 20;
+        let currentAdIndex = 0;
+        let isWatching = false;
         
         // Инициализация приложения
         function initApp() {
             updateUserInfo();
-            loadRandomAd();
+            loadAd();
             setupEventListeners();
-            
-            // Показываем кнопку вывода если баланс > 50
-            if(userData.balance >= 50) {
-                tg.MainButton.show();
-            }
         }
         
         // Обновление информации о пользователе
         function updateUserInfo() {
             elements.balance.textContent = `${userData.balance.toFixed(2)} ₽`;
+            elements.adsViewed.textContent = userData.adCount;
+            elements.totalEarned.textContent = `${userData.totalEarned.toFixed(2)} ₽`;
+            elements.referrals.textContent = userData.referrals;
+            elements.refEarned.textContent = `${userData.refEarned.toFixed(2)} ₽`;
+            elements.refCount.textContent = userData.referrals;
+            elements.withdrawBalance.textContent = `${userData.balance.toFixed(2)} ₽`;
+            
+            // Обновление прогресса
+            const progress = Math.min(100, (userData.balance / 50) * 100);
+            elements.balanceProgress.style.width = `${progress}%`;
+            elements.progressText.textContent = `${progress.toFixed(0)}% от минимального вывода`;
         }
         
-        // Загрузка случайного рекламного объявления
-        function loadRandomAd() {
-            const ad = ads[Math.floor(Math.random() * ads.length)];
+        // Загрузка рекламного объявления
+        function loadAd() {
+            currentAdIndex = (currentAdIndex + 1) % ads.length;
+            const ad = ads[currentAdIndex];
+            
             elements.adImage.src = ad.image;
             elements.adTitle.textContent = ad.title;
             elements.adDescription.textContent = ad.description;
+            
+            if (!isWatching) {
+                elements.timer.textContent = "00:20";
+                secondsLeft = 20;
+                elements.watchBtn.textContent = "Смотреть рекламу";
+                elements.watchBtn.disabled = false;
+            }
         }
         
         // Настройка обработчиков событий
@@ -277,41 +740,55 @@
             // Кнопка просмотра рекламы
             elements.watchBtn.addEventListener('click', startWatching);
             
+            // Вкладки
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+                });
+            });
+            
             // Кнопка вывода средств
-            tg.MainButton.onClick(() => {
-                tg.showPopup({
-                    title: 'Вывод средств',
-                    message: `Вы можете вывести ${userData.balance.toFixed(2)} ₽ на ваш кошелек`,
-                    buttons: [
-                        {type: 'default', text: 'На карту'},
-                        {type: 'destructive', text: 'На Qiwi'},
-                        {type: 'cancel', text: 'Отмена'}
-                    ]
-                }, (buttonId) => {
-                    if(buttonId === 0 || buttonId === 1) {
-                        showNotification(`Запрос на вывод ${userData.balance.toFixed(2)} ₽ отправлен!`);
-                        userData.balance = 0;
-                        updateUserInfo();
-                        addHistoryItem(`Запрос вывода средств`);
-                        tg.MainButton.hide();
-                    }
+            document.getElementById('withdrawBtn').addEventListener('click', withdrawFunds);
+            
+            // Методы вывода
+            document.querySelectorAll('.method-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                });
+            });
+            
+            // Кнопка копирования реферальной ссылки
+            document.getElementById('copyBtn').addEventListener('click', copyReferralLink);
+            
+            // Навигация
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Здесь будет переключение экранов в реальном приложении
                 });
             });
         }
         
         // Запуск просмотра рекламы
         function startWatching() {
-            if(countdown) return;
+            if (countdown) return;
             
+            isWatching = true;
             elements.watchBtn.disabled = true;
-            elements.watchBtn.textContent = "Смотрю...";
-            secondsLeft = 10;
+            elements.watchBtn.textContent = "Идет просмотр...";
+            secondsLeft = 20;
             
             countdown = setInterval(() => {
                 secondsLeft--;
                 elements.timer.textContent = `00:${secondsLeft.toString().padStart(2, '0')}`;
                 
-                if(secondsLeft <= 0) {
+                if (secondsLeft <= 0) {
                     finishWatching();
                 }
             }, 1000);
@@ -321,62 +798,102 @@
         function finishWatching() {
             clearInterval(countdown);
             countdown = null;
+            isWatching = false;
             
             // Начисление денег
-            const earned = 0.5;
+            const earned = 0.50;
             userData.balance += earned;
+            userData.totalEarned += earned;
             userData.adCount++;
             
             // Обновление интерфейса
             updateUserInfo();
-            addHistoryItem(`Просмотр рекламы: +${earned.toFixed(2)} ₽`);
-            showNotification(`+${earned.toFixed(2)} ₽ зачислено!`);
+            showNotification(`+${earned.toFixed(2)} ₽ за просмотр рекламы!`);
             
             // Сброс таймера
-            elements.timer.textContent = "00:00";
             elements.watchBtn.textContent = "Смотреть следующую рекламу";
             elements.watchBtn.disabled = false;
             
-            // Загрузка новой рекламы
+            // Загрузка новой рекламы через 1 секунду
             setTimeout(() => {
-                loadRandomAd();
+                loadAd();
             }, 1000);
-            
-            // Показ кнопки вывода если достигнут минимум
-            if(userData.balance >= 50 && !tg.MainButton.isVisible) {
-                tg.MainButton.show();
-            }
         }
         
-        // Добавление записи в историю
-        function addHistoryItem(text) {
+        // Запрос на вывод средств
+        function withdrawFunds() {
+            const method = document.querySelector('.method-card.active').dataset.method;
+            const account = document.getElementById('withdrawAccount').value;
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            
+            if (!account) {
+                showNotification("Введите номер карты/кошелька", "error");
+                return;
+            }
+            
+            if (amount < 50) {
+                showNotification("Минимальная сумма вывода - 50 ₽", "error");
+                return;
+            }
+            
+            if (amount > userData.balance) {
+                showNotification("Недостаточно средств на балансе", "error");
+                return;
+            }
+            
+            // В реальном приложении здесь будет запрос к API @adsgram_ai
+            showNotification(`Запрос на вывод ${amount.toFixed(2)} ₽ отправлен!`);
+            userData.balance -= amount;
+            updateUserInfo();
+            
+            // Добавление в историю
+            const history = document.getElementById('withdrawHistory');
             const now = new Date();
-            const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            const methodNames = {
+                'card': 'банковскую карту',
+                'qiwi': 'QIWI кошелек',
+                'yoomoney': 'ЮMoney'
+            };
             
             const item = document.createElement('div');
             item.className = 'history-item';
-            item.innerHTML = `<strong>${timeString}</strong> - ${text}`;
+            item.innerHTML = `
+                <div>
+                    <div>Вывод на ${methodNames[method]}</div>
+                    <div class="history-date">${dateStr}</div>
+                </div>
+                <div class="history-amount">-${amount.toFixed(2)} ₽</div>
+            `;
             
-            elements.historyList.prepend(item);
+            history.prepend(item);
+            
+            // Очистка полей
+            document.getElementById('withdrawAccount').value = '';
+            document.getElementById('withdrawAmount').value = '';
+        }
+        
+        // Копирование реферальной ссылки
+        function copyReferralLink() {
+            const linkInput = document.getElementById('referralLink');
+            linkInput.select();
+            document.execCommand('copy');
+            showNotification("Ссылка скопирована в буфер обмена!");
         }
         
         // Показать уведомление
-        function showNotification(text) {
+        function showNotification(text, type = "success") {
             const notification = document.createElement('div');
             notification.className = 'notification';
             notification.textContent = text;
+            notification.style.background = type === "error" ? "var(--danger)" : "var(--success)";
             document.body.appendChild(notification);
             
             setTimeout(() => {
                 notification.remove();
             }, 3000);
         }
-        
-        // Активация кнопки после загрузки
-        setTimeout(() => {
-            elements.watchBtn.textContent = "Смотреть рекламу";
-            elements.watchBtn.disabled = false;
-        }, 2000);
         
         // Запуск приложения
         initApp();
