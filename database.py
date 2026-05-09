@@ -132,16 +132,10 @@ class Database:
 
     async def update_game_settings(self, chat_id, timer=None, stars=None):
         if timer is not None:
-            await self._db.execute(
-                "UPDATE games SET timer_duration=? WHERE chat_id=? AND active=1",
-                (timer, chat_id)
-            )
+            await self._db.execute("UPDATE games SET timer_duration=? WHERE chat_id=? AND active=1", (timer, chat_id))
         if stars is not None:
             stars_json = json.dumps(stars)
-            await self._db.execute(
-                "UPDATE games SET allowed_stars=? WHERE chat_id=? AND active=1",
-                (stars_json, chat_id)
-            )
+            await self._db.execute("UPDATE games SET allowed_stars=? WHERE chat_id=? AND active=1", (stars_json, chat_id))
         await self._db.commit()
 
     async def update_leader(self, chat_id, user_id, user_name, timer_start, job_name):
@@ -180,12 +174,20 @@ class Database:
     async def get_all_active_games(self) -> List[Dict[str, Any]]:
         cur = await self._db.execute("SELECT * FROM games WHERE active=1")
         rows = await cur.fetchall()
-        games = []
-        for row in rows:
-            g = dict(row)
-            g["allowed_stars"] = json.loads(g["allowed_stars"])
-            games.append(g)
-        return games
+        return [dict(r) for r in rows]
+
+    async def get_active_game_counts(self) -> Dict[str, int]:
+        """Return counts of active games for status check (fast)."""
+        cur = await self._db.execute("SELECT COUNT(*) as c FROM games WHERE active=1")
+        row = await cur.fetchone()
+        auctions = row['c'] if row else 0
+        cur = await self._db.execute("SELECT COUNT(*) as c FROM lucky_draws WHERE active=1")
+        row = await cur.fetchone()
+        lucky = row['c'] if row else 0
+        cur = await self._db.execute("SELECT COUNT(*) as c FROM dice_games WHERE active=1")
+        row = await cur.fetchone()
+        dice = row['c'] if row else 0
+        return {'auctions': auctions, 'lucky_draws': lucky, 'dice': dice}
 
     async def create_lucky_draw(self, chat_id, chance, prize, photo_file_id=None):
         await self._db.execute(
