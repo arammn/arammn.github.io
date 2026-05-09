@@ -1,4 +1,4 @@
-"""Admin private chat handlers – timer change notifies group, lucky draw photo."""
+"""Admin private chat handlers – with dice game, stats."""
 from telegram import Update
 from telegram.ext import (
     CommandHandler, CallbackQueryHandler, ConversationHandler,
@@ -13,15 +13,14 @@ logger = logging.getLogger(__name__)
 
 ASK_TIMER, ASK_STARS, ASK_DESCRIPTION = range(3)
 ASK_CHANCE, ASK_PRIZE, ASK_PHOTO = range(10, 13)
-EDIT_TIMER, EDIT_STARS = range(20, 22)
+DICE_EMOJI, DICE_VALUE, DICE_PRIZE = range(20, 23)
+EDIT_TIMER, EDIT_STARS = range(30, 32)
 
 db = Database()
-# auction_mgr is not used here for timer reset anymore; we'll only use it to fetch active lists if needed, but we can avoid import
-# We'll import AuctionManager just to get the instance? Not needed. We'll directly use db.
 
 async def is_admin(uid): return uid in Config.ADMIN_IDS
 
-# ---------- /start, /active, /stop ----------
+# ---------- /start, /active, /stop, /stats ----------
 async def start_cmd(update: Update, context):
     if not await is_admin(update.effective_user.id):
         await update.message.reply_text("⛔ Нет доступа.")
@@ -37,13 +36,27 @@ async def active_cmd(update: Update, context):
         return
     games = await db.get_all_active_games()
     draws = await db.get_all_active_lucky_draws()
-    if not games and not draws:
+    dice_games = await db.get_all_active_dice_games()
+    if not games and not draws and not dice_games:
         await update.message.reply_text("Нет активных игр.")
         return
-    await update.message.reply_text("🏃 Активные игры:", reply_markup=build_active_games_keyboard(games, draws), parse_mode="HTML")
+    await update.message.reply_text("🏃 Активные игры:", reply_markup=build_active_games_keyboard(games, draws, dice_games), parse_mode="HTML")
 
 async def stop_cmd(update: Update, context):
     await active_cmd(update, context)
+
+async def stats_cmd(update: Update, context):
+    games = await db.get_all_active_games()
+    if not games:
+        await update.message.reply_text("Нет активных аукционов.")
+        return
+    text = "📊 <b>Статистика аукционов:</b>\n"
+    for g in games:
+        leader = g.get('leader_name', 'Нет')
+        bids = g.get('bid_count', 0)
+        stars = g.get('total_stars', 0)
+        text += f"\nГруппа <code>{g['chat_id']}</code>: лидер {leader}, ставок: {bids}, звёзд: {stars}"
+    await update.message.reply_text(text, parse_mode="HTML")
 
 # ---------- group select -> mode ----------
 async def select_group_cb(update: Update, context):
@@ -136,7 +149,7 @@ async def ask_description(update: Update, context) -> int:
         logger.error(f"Announce fail: {e}")
     return ConversationHandler.END
 
-# ---------- Edit active auction ----------
+# ---------- Edit auction ----------
 async def edit_game_cb(update: Update, context):
     query = update.callback_query; await query.answer()
     if not await is_admin(update.effective_user.id): return
@@ -170,7 +183,6 @@ async def edit_timer_value(update: Update, context):
     new_timer = int(text)
     chat_id = context.user_data["edit_chat_id"]
     await db.update_game_settings(chat_id, timer=new_timer)
-    # Notify group about the change (in Russian)
     mins = new_timer // 60
     secs = new_timer % 60
     duration_str = f"{mins} мин" if secs == 0 else f"{mins} мин {secs} сек"
@@ -200,11 +212,7 @@ async def edit_stars_value(update: Update, context):
     await update.message.reply_text(f"✅ Разрешённые звёзды изменены на {', '.join(map(str, stars))}.")
     return ConversationHandler.END
 
-async def back_from_edit_cb(update: Update, context):
-    query = update.callback_query; await query.answer()
-    await active_cmd(update, context)
-
-# ---------- Lucky Draw with photo (unchanged) ----------
+# ---------- Lucky Draw ----------
 async def lucky_draw_cb(update: Update, context) -> int:
     query = update.callback_query; await query.answer()
     chat_id = int(query.data.split(":")[1])
@@ -258,6 +266,56 @@ async def ask_photo(update: Update, context) -> int:
         logger.error(f"Failed to announce Lucky Draw: {e}")
     return ConversationHandler.END
 
+# ---------- Dice Game ----------
+async def dice_mode_cb(update: Update, context) -> int:
+    query = update.callback_query; await query.answer()
+    chat_id = int(query.data.split(":")[1])
+    context.user_data["dice_chat_id"] = chat_id
+    await query.edit_message_text("🎲 Выберите кость/игру:", reply_markup=build_dice_emoji_keyboard())
+    return DICE_EMOJI
+
+async def dice_emoji_chosen(update: Update, context):
+    query = update.callback_query; await query.answer()
+    emoji = query.data.split("_", 2)[2]
+    context.user_data["dice_emoji"] = emoji
+    if emoji == "🎰":
+        hint = " (64 = 777)"
+        default_win = 64
+    else:
+        hint = ""
+        default_win = 6 if emoji in ("🎲", "🎯") else 5
+    await query.edit_message_text(f"🎯 Введите выигрышное значение{hint} (например, {default_win}):")
+    return DICE_VALUE
+
+async def dice_value_entered(update: Update, context) -> int:
+    text = update.message.text.strip()
+    if not text.isdigit() or int(text) < 1 or int(text) > 64:
+        await update.message.reply_text("❌ Введите число от 1 до 64:")
+        return DICE_VALUE
+    context.user_data["dice_value"] = int(text)
+    await update.message.reply_text("🎁 Введите описание приза:")
+    return DICE_PRIZE
+
+async def dice_prize_entered(update: Update, context) -> int:
+    prize = update.message.text.strip()
+    if not prize:
+        await update.message.reply_text("❌ Приз не может быть пустым.")
+        return DICE_PRIZE
+    chat_id = context.user_data["dice_chat_id"]
+    emoji = context.user_data["dice_emoji"]
+    value = context.user_data["dice_value"]
+    await db.create_dice_game(chat_id, emoji, value, prize)
+    await update.message.reply_text(f"✅ Игра с {emoji} на {value} создана в группе {chat_id}!")
+    try:
+        await context.bot.send_message(
+            chat_id,
+            f"🎲 <b>Игра начата!</b> Отправьте {emoji}, чтобы попробовать выбить {value} и выиграть: {html.escape(prize)}.",
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        logger.error(f"Failed to announce dice game: {e}")
+    return ConversationHandler.END
+
 # ---------- Stop handlers ----------
 async def stop_game_cb(update: Update, context):
     query = update.callback_query; await query.answer()
@@ -280,10 +338,38 @@ async def stop_lucky_cb(update: Update, context):
     try: await context.bot.send_message(chat_id, "🎰 Lucky Draw остановлен администратором.")
     except: pass
 
+async def stop_dice_cb(update: Update, context):
+    query = update.callback_query; await query.answer()
+    if not await is_admin(update.effective_user.id): return
+    chat_id = int(query.data.split(":")[1])
+    await db.deactivate_dice_game(chat_id)
+    await query.edit_message_text(f"🎲 Dice Game остановлена в {chat_id}.")
+    try: await context.bot.send_message(chat_id, "🎲 Игра остановлена администратором.")
+    except: pass
+
+async def stats_game_cb(update: Update, context):
+    query = update.callback_query; await query.answer()
+    chat_id = int(query.data.split(":")[1])
+    game = await db.get_active_game(chat_id)
+    if not game:
+        await query.edit_message_text("Аукцион не активен.")
+        return
+    await query.edit_message_text(
+        f"📊 <b>Статистика аукциона в {chat_id}</b>\n"
+        f"Лидер: {game.get('leader_name', 'Нет')}\n"
+        f"Ставок: {game.get('bid_count', 0)}\n"
+        f"Звёзд: {game.get('total_stars', 0)}",
+        parse_mode="HTML"
+    )
+
 async def back_to_mode_cb(update: Update, context):
     query = update.callback_query; await query.answer()
     chat_id = int(query.data.split(":")[1])
     await query.edit_message_text("Выберите режим:", reply_markup=build_game_mode_keyboard(chat_id))
+
+async def back_from_edit_cb(update: Update, context):
+    query = update.callback_query; await query.answer()
+    await active_cmd(update, context)
 
 async def cancel_cb(update: Update, context):
     query = update.callback_query; await query.answer()
@@ -316,6 +402,16 @@ def register_admin_handlers(app):
         fallbacks=[CommandHandler("cancel", cancel_conv), CommandHandler("start", cancel_conv)],
         per_user=True
     )
+    dice_conv = ConversationHandler(
+        entry_points=[CallbackQueryHandler(dice_mode_cb, pattern=r"^dice_mode:")],
+        states={
+            DICE_EMOJI: [CallbackQueryHandler(dice_emoji_chosen, pattern=r"^dice_emoji_")],
+            DICE_VALUE: [MessageHandler(filters.TEXT & ~filters.COMMAND, dice_value_entered)],
+            DICE_PRIZE: [MessageHandler(filters.TEXT & ~filters.COMMAND, dice_prize_entered)]
+        },
+        fallbacks=[CommandHandler("cancel", cancel_conv), CommandHandler("start", cancel_conv)],
+        per_user=True
+    )
     edit_timer_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(edit_timer_cb, pattern=r"^edit_timer:")],
         states={
@@ -336,8 +432,10 @@ def register_admin_handlers(app):
     app.add_handler(CommandHandler("start", start_cmd))
     app.add_handler(CommandHandler("active", active_cmd))
     app.add_handler(CommandHandler("stop", stop_cmd))
+    app.add_handler(CommandHandler("stats", stats_cmd))
     app.add_handler(auction_conv)
     app.add_handler(lucky_conv)
+    app.add_handler(dice_conv)
     app.add_handler(edit_timer_conv)
     app.add_handler(edit_stars_conv)
 
@@ -349,4 +447,6 @@ def register_admin_handlers(app):
     app.add_handler(CallbackQueryHandler(back_to_mode_cb, pattern=r"^back_to_mode:"))
     app.add_handler(CallbackQueryHandler(stop_game_cb, pattern=r"^stop_game:"))
     app.add_handler(CallbackQueryHandler(stop_lucky_cb, pattern=r"^stop_lucky:"))
+    app.add_handler(CallbackQueryHandler(stop_dice_cb, pattern=r"^stop_dice:"))
+    app.add_handler(CallbackQueryHandler(stats_game_cb, pattern=r"^stats_game:"))
     app.add_handler(CallbackQueryHandler(cancel_cb, pattern=r"^cancel_action$"))
