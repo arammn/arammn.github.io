@@ -1,4 +1,4 @@
-"""Admin private chat handlers – with dice game, stats."""
+"""Admin private chat handlers – with dice game, stats, status."""
 from telegram import Update
 from telegram.ext import (
     CommandHandler, CallbackQueryHandler, ConversationHandler,
@@ -20,7 +20,23 @@ db = Database()
 
 async def is_admin(uid): return uid in Config.ADMIN_IDS
 
-# ---------- /start, /active, /stop, /stats ----------
+# ---------- /status (public) ----------
+async def status_public(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    counts = await db.get_active_game_counts()
+    auctions = counts['auctions']
+    lucky = counts['lucky_draws']
+    dice = counts['dice']
+    if auctions == 0 and lucky == 0 and dice == 0:
+        await update.message.reply_text("📊 <b>Статус бота:</b> нет активных игр.", parse_mode="HTML")
+    else:
+        parts = []
+        if auctions: parts.append(f"Аукционы: {auctions}")
+        if lucky: parts.append(f"Lucky Draw: {lucky}")
+        if dice: parts.append(f"Кости: {dice}")
+        text = f"📊 <b>Статус бота:</b>\n" + "\n".join(parts)
+        await update.message.reply_text(text, parse_mode="HTML")
+
+# ---------- /start, /active, /stop, /stats (admin only) ----------
 async def start_cmd(update: Update, context):
     if not await is_admin(update.effective_user.id):
         await update.message.reply_text("⛔ Нет доступа.")
@@ -46,6 +62,8 @@ async def stop_cmd(update: Update, context):
     await active_cmd(update, context)
 
 async def stats_cmd(update: Update, context):
+    if not await is_admin(update.effective_user.id):
+        return
     games = await db.get_all_active_games()
     if not games:
         await update.message.reply_text("Нет активных аукционов.")
@@ -279,18 +297,28 @@ async def dice_emoji_chosen(update: Update, context):
     emoji = query.data.split("_", 2)[2]
     context.user_data["dice_emoji"] = emoji
     if emoji == "🎰":
+        max_val = 64
         hint = " (64 = 777)"
-        default_win = 64
-    else:
+    elif emoji in ("🎲", "🎯"):
+        max_val = 6
         hint = ""
-        default_win = 6 if emoji in ("🎲", "🎯") else 5
-    await query.edit_message_text(f"🎯 Введите выигрышное значение{hint} (например, {default_win}):")
+    else:
+        max_val = 5
+        hint = ""
+    await query.edit_message_text(f"🎯 Введите выигрышное значение (от 1 до {max_val}){hint}:")
     return DICE_VALUE
 
 async def dice_value_entered(update: Update, context) -> int:
     text = update.message.text.strip()
-    if not text.isdigit() or int(text) < 1 or int(text) > 64:
-        await update.message.reply_text("❌ Введите число от 1 до 64:")
+    emoji = context.user_data["dice_emoji"]
+    if emoji == "🎰":
+        max_val = 64
+    elif emoji in ("🎲", "🎯"):
+        max_val = 6
+    else:
+        max_val = 5
+    if not text.isdigit() or not (1 <= int(text) <= max_val):
+        await update.message.reply_text(f"❌ Введите число от 1 до {max_val}:")
         return DICE_VALUE
     context.user_data["dice_value"] = int(text)
     await update.message.reply_text("🎁 Введите описание приза:")
@@ -433,6 +461,7 @@ def register_admin_handlers(app):
     app.add_handler(CommandHandler("active", active_cmd))
     app.add_handler(CommandHandler("stop", stop_cmd))
     app.add_handler(CommandHandler("stats", stats_cmd))
+    app.add_handler(CommandHandler("status", status_public))
     app.add_handler(auction_conv)
     app.add_handler(lucky_conv)
     app.add_handler(dice_conv)
