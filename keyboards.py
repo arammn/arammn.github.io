@@ -13,6 +13,7 @@ def build_game_mode_keyboard(chat_id: int):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("💰 Ивент (аукцион)", callback_data=f"auction_mode:{chat_id}")],
         [InlineKeyboardButton("🎰 Lucky Draw", callback_data=f"lucky_draw_mode:{chat_id}")],
+        [InlineKeyboardButton("🎲 Dice Game", callback_data=f"dice_mode:{chat_id}")],
         [InlineKeyboardButton("❌ Отмена", callback_data="cancel_action")]
     ])
 
@@ -23,14 +24,17 @@ def build_auction_options_keyboard(chat_id: int):
         [InlineKeyboardButton("🔙 Назад", callback_data=f"back_to_mode:{chat_id}")]
     ])
 
-def build_active_games_keyboard(games, draws):
+def build_active_games_keyboard(games, draws, dice_games):
     buttons = []
     for g in games:
         leader = g.get('leader_name', 'Нет ставок')
         buttons.append([InlineKeyboardButton(f"🛑 Аукцион {g['chat_id']} – {leader}", callback_data=f"stop_game:{g['chat_id']}")])
         buttons.append([InlineKeyboardButton(f"✏️ Изменить {g['chat_id']}", callback_data=f"edit_game:{g['chat_id']}")])
+        buttons.append([InlineKeyboardButton(f"📊 Статистика {g['chat_id']}", callback_data=f"stats_game:{g['chat_id']}")])
     for d in draws:
         buttons.append([InlineKeyboardButton(f"🎰 Lucky Draw {d['chat_id']} – {d['prize']}", callback_data=f"stop_lucky:{d['chat_id']}")])
+    for dg in dice_games:
+        buttons.append([InlineKeyboardButton(f"🎲 Dice {dg['chat_id']} – {dg['prize']}", callback_data=f"stop_dice:{dg['chat_id']}")])
     buttons.append([InlineKeyboardButton("Закрыть", callback_data="cancel_action")])
     return InlineKeyboardMarkup(buttons)
 
@@ -41,8 +45,12 @@ def build_edit_game_keyboard(chat_id: int):
         [InlineKeyboardButton("🔙 Назад", callback_data=f"back_from_edit:{chat_id}")]
     ])
 
-def build_confirm_stop_keyboard(chat_id: int, type_: str = "game"):
+def build_dice_emoji_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("✅ Да, остановить", callback_data=f"confirm_stop_{type_}:{chat_id}"),
-         InlineKeyboardButton("❌ Отмена", callback_data="cancel_action")]
+        [InlineKeyboardButton("🎲 Кубик (1-6)", callback_data="dice_emoji_🎲")],
+        [InlineKeyboardButton("🎯 Дартс (1-6)", callback_data="dice_emoji_🎯")],
+        [InlineKeyboardButton("⚽ Футбол (1-5)", callback_data="dice_emoji_⚽")],
+        [InlineKeyboardButton("🏀 Баскетбол (1-5)", callback_data="dice_emoji_🏀")],
+        [InlineKeyboardButton("🎰 Казино (777=64)", callback_data="dice_emoji_🎰")],
+        [InlineKeyboardButton("❌ Отмена", callback_data="cancel_action")]
     ])
