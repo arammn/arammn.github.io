@@ -28,16 +28,17 @@ class AuctionManager:
 
         lock = self._lock(chat_id)
         async with lock:
-            game = await self.db.get_active_game(chat_id)   # fresh data, includes any new timer/stars
+            game = await self.db.get_active_game(chat_id)
             if not game or game.get('current_leader_id') == user.id:
                 return
 
+            paid_stars = getattr(msg, 'paid_star_count', 0)
             if user.username:
                 user_disp = f"@{user.username}"
             else:
                 user_disp = html.escape(user.full_name)
 
-            duration = game['timer_duration']     # may have been changed by edit
+            duration = game['timer_duration']
             mins = duration // 60
             secs = duration % 60
             time_left = f"{mins} мин" if secs == 0 else f"{mins} мин {secs} сек"
@@ -47,6 +48,7 @@ class AuctionManager:
                 f"Новый лидер: <b>{user_disp}</b>. До конца: {time_left}.",
                 parse_mode="HTML"
             )
+            await self.db.increment_bid(chat_id, paid_stars)
             await self._reset_timer(context, chat_id, user.id, user_disp, game)
 
     async def _reset_timer(self, context, chat_id, user_id, user_name, game):
@@ -141,26 +143,55 @@ class AuctionManager:
         now = time.time()
         for g in games:
             chat_id = g['chat_id']
-            if g.get('timer_start'):
-                elapsed = now - g['timer_start']
-                remaining = g['timer_duration'] - elapsed
-                if remaining > 0:
-                    job_name = g.get('job_name') or f"restore_{chat_id}"
-                    app.job_queue.run_once(
-                        self._end_auction, remaining,
-                        chat_id=chat_id, name=job_name,
-                        data={'chat_id': chat_id, 'job_name': job_name}
-                    )
-                    for sec in COUNTDOWN_SECS:
-                        if remaining > sec:
-                            delay = remaining - sec
-                            app.job_queue.run_once(
-                                self._send_countdown, delay,
-                                chat_id=chat_id, name=f"countdown_r_{chat_id}_{sec}",
-                                data={'chat_id': chat_id, 'seconds_left': sec}
-                            )
-                else:
+            # If timer never started (no bids), just keep active, do nothing.
+            if not g.get('timer_start'):
+                logger.info(f"Auction in {chat_id} active but no bids yet, skipping restore.")
+                continue
+
+            elapsed = now - g['timer_start']
+            remaining = g['timer_duration'] - elapsed
+
+            if remaining > 0:
+                leader = g.get('leader_name', 'Никто')
+                mins = int(remaining) // 60
+                secs = int(remaining) % 60
+                time_str = f"{mins} мин" if secs == 0 else f"{mins} мин {secs} сек"
+                if leader:
                     try:
-                        await app.bot.send_message(chat_id, f"Ивент завершился, пока бот был офлайн. Победитель: {g.get('leader_name','Никто')}")
+                        await app.bot.send_message(
+                            chat_id,
+                            f"🔄 Бот был перезапущен.\n"
+                            f"Текущий лидер: <b>{leader}</b>\n"
+                            f"Осталось: {time_str}.",
+                            parse_mode="HTML"
+                        )
                     except: pass
-                    await self.db.deactivate_game(chat_id)
+
+                # Schedule end job with exact remaining time
+                job_name = f"restore_{chat_id}_{int(now)}"
+                app.job_queue.run_once(
+                    self._end_auction, remaining,
+                    chat_id=chat_id, name=job_name,
+                    data={'chat_id': chat_id, 'job_name': job_name}
+                )
+                # Schedule countdowns
+                for sec in COUNTDOWN_SECS:
+                    if remaining > sec:
+                        delay = remaining - sec
+                        app.job_queue.run_once(
+                            self._send_countdown, delay,
+                            chat_id=chat_id, name=f"countdown_r_{chat_id}_{sec}",
+                            data={'chat_id': chat_id, 'seconds_left': sec}
+                        )
+                # Update job_name in DB
+                await self.db.update_leader(chat_id, g['current_leader_id'], leader, g['timer_start'], job_name)
+            else:
+                # Timer already expired while bot was down – end the auction
+                winner_name = g.get('leader_name', 'Никто')
+                try:
+                    await app.bot.send_message(
+                        chat_id,
+                        f"🏆 Ивент завершился, пока бот был офлайн. Победитель: {winner_name}"
+                    )
+                except: pass
+                await self.db.deactivate_game(chat_id)
