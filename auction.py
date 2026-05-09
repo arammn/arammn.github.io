@@ -1,4 +1,4 @@
-"""Auction core – Russian, HTML, race‑free, optimized job cancellation."""
+"""Auction core – Russian, HTML, race‑free, optimized."""
 import time, asyncio, logging, html
 from database import Database
 
@@ -123,7 +123,6 @@ class AuctionManager:
             else:
                 await context.bot.send_message(chat_id, "⏰ Ивент завершён без ставок.")
             await self.db.deactivate_game(chat_id)
-        # free lock after auction ends (optional memory optimization)
         self.locks.pop(chat_id, None)
 
     async def _is_admin(self, chat_id, user_id, context):
