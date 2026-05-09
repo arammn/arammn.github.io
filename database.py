@@ -174,20 +174,25 @@ class Database:
     async def get_all_active_games(self) -> List[Dict[str, Any]]:
         cur = await self._db.execute("SELECT * FROM games WHERE active=1")
         rows = await cur.fetchall()
-        return [dict(r) for r in rows]
+        games = []
+        for row in rows:
+            g = dict(row)
+            g["allowed_stars"] = json.loads(g["allowed_stars"])
+            games.append(g)
+        return games
 
     async def get_active_game_counts(self) -> Dict[str, int]:
-        """Return counts of active games for status check (fast)."""
+        """Fast count query for status."""
         cur = await self._db.execute("SELECT COUNT(*) as c FROM games WHERE active=1")
         row = await cur.fetchone()
-        auctions = row['c'] if row else 0
+        auc = row['c'] if row else 0
         cur = await self._db.execute("SELECT COUNT(*) as c FROM lucky_draws WHERE active=1")
         row = await cur.fetchone()
         lucky = row['c'] if row else 0
         cur = await self._db.execute("SELECT COUNT(*) as c FROM dice_games WHERE active=1")
         row = await cur.fetchone()
         dice = row['c'] if row else 0
-        return {'auctions': auctions, 'lucky_draws': lucky, 'dice': dice}
+        return {'auctions': auc, 'lucky_draws': lucky, 'dice': dice}
 
     async def create_lucky_draw(self, chat_id, chance, prize, photo_file_id=None):
         await self._db.execute(
