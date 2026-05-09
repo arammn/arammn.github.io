@@ -1,6 +1,6 @@
 """Lucky Draw mini-game – pin win, notify admins."""
 import random, logging, time, html
-from config import Config            # <-- imported
+from config import Config
 from database import Database
 
 logger = logging.getLogger(__name__)
@@ -28,8 +28,6 @@ class LuckyDrawManager:
                 winner = f"@{user.username}"
             else:
                 winner = html.escape(user.full_name)
-
-            # Announce and pin
             win_msg = await msg.reply_text(
                 f"🎉 Поздравляем! <b>{winner}</b> выиграл: {prize}!",
                 parse_mode="HTML"
@@ -39,7 +37,6 @@ class LuckyDrawManager:
             except Exception as e:
                 logger.error(f"Could not pin message: {e}")
 
-            # Notify bot admins (owner)
             for admin_id in Config.ADMIN_IDS:
                 dm_text = (
                     f"🎰 <b>Lucky Draw Win!</b>\n"
