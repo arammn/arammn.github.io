@@ -1,4 +1,4 @@
-"""Auction core – Russian, HTML, race‑free, optimized."""
+"""Auction core – Russian, HTML, race‑free, optimized job cancellation."""
 import time, asyncio, logging, html
 from database import Database
 
@@ -123,6 +123,8 @@ class AuctionManager:
             else:
                 await context.bot.send_message(chat_id, "⏰ Ивент завершён без ставок.")
             await self.db.deactivate_game(chat_id)
+        # free lock after auction ends (optional memory optimization)
+        self.locks.pop(chat_id, None)
 
     async def _is_admin(self, chat_id, user_id, context):
         cache = context.bot_data.setdefault('admin_cache', {})
@@ -143,9 +145,8 @@ class AuctionManager:
         now = time.time()
         for g in games:
             chat_id = g['chat_id']
-            # If timer never started (no bids), just keep active, do nothing.
             if not g.get('timer_start'):
-                logger.info(f"Auction in {chat_id} active but no bids yet, skipping restore.")
+                logger.info(f"Auction in {chat_id} active but no bids, nothing to restore.")
                 continue
 
             elapsed = now - g['timer_start']
@@ -167,26 +168,23 @@ class AuctionManager:
                         )
                     except: pass
 
-                # Schedule end job with exact remaining time
-                job_name = f"restore_{chat_id}_{int(now)}"
+                job_name = f"auction_{chat_id}_{int(now)}"
                 app.job_queue.run_once(
                     self._end_auction, remaining,
                     chat_id=chat_id, name=job_name,
                     data={'chat_id': chat_id, 'job_name': job_name}
                 )
-                # Schedule countdowns
+                prefix = f"countdown_{chat_id}_"
                 for sec in COUNTDOWN_SECS:
                     if remaining > sec:
                         delay = remaining - sec
                         app.job_queue.run_once(
                             self._send_countdown, delay,
-                            chat_id=chat_id, name=f"countdown_r_{chat_id}_{sec}",
+                            chat_id=chat_id, name=f"{prefix}{sec}",
                             data={'chat_id': chat_id, 'seconds_left': sec}
                         )
-                # Update job_name in DB
                 await self.db.update_leader(chat_id, g['current_leader_id'], leader, g['timer_start'], job_name)
             else:
-                # Timer already expired while bot was down – end the auction
                 winner_name = g.get('leader_name', 'Никто')
                 try:
                     await app.bot.send_message(
