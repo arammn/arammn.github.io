@@ -51,6 +51,6 @@ def build_dice_emoji_keyboard():
         [InlineKeyboardButton("🎯 Дартс (1-6)", callback_data="dice_emoji_🎯")],
         [InlineKeyboardButton("⚽ Футбол (1-5)", callback_data="dice_emoji_⚽")],
         [InlineKeyboardButton("🏀 Баскетбол (1-5)", callback_data="dice_emoji_🏀")],
-        [InlineKeyboardButton("🎰 Казино (777=64)", callback_data="dice_emoji_🎰")],
+        [InlineKeyboardButton("🎰 Казино (1-64, 777=64)", callback_data="dice_emoji_🎰")],
         [InlineKeyboardButton("❌ Отмена", callback_data="cancel_action")]
     ])
