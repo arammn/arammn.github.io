@@ -1,10 +1,11 @@
 """Group message handlers."""
 from telegram import Update
-from telegram.ext import MessageHandler, filters, ContextTypes
+from telegram.ext import MessageHandler, filters, ContextTypes, CommandHandler
 from database import Database
 from auction import AuctionManager
 from lucky_draw import LuckyDrawManager
 from dice_game import DiceGameManager
+from .admin_private import status_public
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,3 +45,4 @@ async def grp_status(update: Update, context):
 def register_group_handlers(app):
     app.add_handler(MessageHandler(filters.ChatType.GROUPS, group_msg_handler))
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, grp_status))
+    app.add_handler(CommandHandler("status", status_public))
