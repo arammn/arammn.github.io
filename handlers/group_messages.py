@@ -4,12 +4,14 @@ from telegram.ext import MessageHandler, filters, ContextTypes
 from database import Database
 from auction import AuctionManager
 from lucky_draw import LuckyDrawManager
+from dice_game import DiceGameManager
 import logging
 
 logger = logging.getLogger(__name__)
 db = Database()
 auction_mgr = AuctionManager()
 lucky_mgr = LuckyDrawManager()
+dice_mgr = DiceGameManager()
 
 async def group_msg_handler(update: Update, context):
     chat = update.effective_chat
@@ -28,6 +30,7 @@ async def group_msg_handler(update: Update, context):
     logger.info(f"[GROUP] msg from {update.effective_user.id} in {chat.id}, paid_stars={getattr(msg, 'paid_star_count', 0)}")
     await auction_mgr.process_bid(update, context)
     await lucky_mgr.process_message(update, context)
+    await dice_mgr.process_message(update, context)
 
 async def grp_status(update: Update, context):
     chat = update.effective_chat
