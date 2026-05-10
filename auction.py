@@ -3,7 +3,7 @@ import time, asyncio, logging, html
 from database import Database
 
 logger = logging.getLogger(__name__)
-COUNTDOWN_SECS = [30, 15, 10, 5, 4, 3, 2, 1]
+COUNTDOWN_SECS = [60, 30, 15, 10, 5, 4, 3, 2, 1]
 
 class AuctionManager:
     def __init__(self):
