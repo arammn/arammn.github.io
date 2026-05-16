@@ -23,7 +23,6 @@ class AuctionManager:
         game = await self.db.get_active_game(chat_id)
         if not game or user.is_bot:
             return
-        # ignore check
         if await self.db.is_ignored(chat_id, user.id):
             return
         if await self._is_admin(chat_id, user.id, context):
