@@ -1,4 +1,4 @@
-"""Admin private chat handlers – complete with all game modes."""
+"""Admin private chat handlers – complete with all game modes (syntax fixed)."""
 from telegram import Update
 from telegram.ext import (
     CommandHandler, CallbackQueryHandler, ConversationHandler,
@@ -52,7 +52,8 @@ async def start_cmd(update: Update, context):
     await update.message.reply_text("🎮 Выберите группу:", reply_markup=build_group_selection_keyboard(groups))
 
 async def active_cmd(update: Update, context):
-    if not await is_admin(update.effective_user.id): return
+    if not await is_admin(update.effective_user.id):
+        return
     games = await db.get_all_active_games()
     draws = await db.get_all_active_lucky_draws()
     dice = await db.get_all_active_dice_games()
@@ -62,24 +63,29 @@ async def active_cmd(update: Update, context):
         return
     await update.message.reply_text("🏃 Активные игры:", reply_markup=build_active_games_keyboard(games, draws, dice, guess), parse_mode="HTML")
 
-async def stop_cmd(update: Update, context): await active_cmd(update, context)
+async def stop_cmd(update: Update, context):
+    await active_cmd(update, context)
 
 async def stats_cmd(update: Update, context):
-    if not await is_admin(update.effective_user.id): return
+    if not await is_admin(update.effective_user.id):
+        return
     games = await db.get_all_active_games()
-    if not games: await update.message.reply_text("Нет активных аукционов."); return
+    if not games:
+        await update.message.reply_text("Нет активных аукционов.")
+        return
     text = "📊 <b>Статистика аукционов:</b>\n"
     for g in games:
         leader = g.get('leader_name', 'Нет')
-        bids = g.get('bid_count',0)
-        stars = g.get('total_stars',0)
+        bids = g.get('bid_count', 0)
+        stars = g.get('total_stars', 0)
         text += f"\nГруппа <code>{g['chat_id']}</code>: лидер {leader}, ставок: {bids}, звёзд: {stars}"
     await update.message.reply_text(text, parse_mode="HTML")
 
 # ── group select -> mode ──
 async def select_group_cb(update: Update, context):
     query = update.callback_query; await query.answer()
-    if not await is_admin(update.effective_user.id): return await query.edit_message_text("⛔ Нет доступа.")
+    if not await is_admin(update.effective_user.id):
+        return await query.edit_message_text("⛔ Нет доступа.")
     chat_id = int(query.data.split(":")[1])
     context.user_data["selected_chat_id"] = chat_id
     await query.edit_message_text(f"📱 Группа <code>{chat_id}</code>\nВыберите режим:", reply_markup=build_game_mode_keyboard(chat_id), parse_mode="HTML")
@@ -101,8 +107,13 @@ async def auction_default_cb(update: Update, context):
     prize = html.escape(game.get('description', '🎁'))
     desc_line = f"🎁 Приз: {prize}\n" if prize else ""
     try:
-        await context.bot.send_message(chat_id, f"🎉 <b>Ивент начался!</b>\n\n⭐ 1 сообщение в чате = {stars} звёзд.\n⏱ Цель: продержаться {mins} мин без перебива.\n{desc_line}", parse_mode="HTML")
-    except Exception as e: logger.error(f"Announce fail: {e}")
+        await context.bot.send_message(
+            chat_id,
+            f"🎉 <b>Ивент начался!</b>\n\n⭐ 1 сообщение в чате = {stars} звёзд.\n⏱ Цель: продержаться {mins} мин без перебива.\n{desc_line}",
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        logger.error(f"Announce fail: {e}")
     await query.edit_message_text("✅ Ивент запущен со стандартными настройками.")
 
 async def auction_custom_cb(update: Update, context) -> int:
@@ -125,7 +136,8 @@ async def ask_stars(update: Update, context) -> int:
     text = update.message.text.strip()
     try:
         stars = [int(s.strip()) for s in text.split(",") if s.strip()]
-        if not stars or any(not (1 <= s <= 999) for s in stars): raise ValueError
+        if not stars or any(not (1 <= s <= 999) for s in stars):
+            raise ValueError
         stars = sorted(set(stars))
     except:
         await update.message.reply_text("❌ Введите положительные числа: 1,2,3")
@@ -146,14 +158,20 @@ async def ask_description(update: Update, context) -> int:
     prize = html.escape(description) if description else '🎁'
     desc_line = f"🎁 Приз: {prize}\n" if description else ""
     try:
-        await context.bot.send_message(chat_id, f"🎉 <b>Ивент начался!</b>\n\n⭐ 1 сообщение в чате = {', '.join(map(str, stars))} звёзд.\n⏱ Цель: продержаться {mins} мин без перебива.\n{desc_line}", parse_mode="HTML")
-    except Exception as e: logger.error(f"Announce fail: {e}")
+        await context.bot.send_message(
+            chat_id,
+            f"🎉 <b>Ивент начался!</b>\n\n⭐ 1 сообщение в чате = {', '.join(map(str, stars))} звёзд.\n⏱ Цель: продержаться {mins} мин без перебива.\n{desc_line}",
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        logger.error(f"Announce fail: {e}")
     return ConversationHandler.END
 
 # ── Edit auction ──
 async def edit_game_cb(update: Update, context):
     query = update.callback_query; await query.answer()
-    if not await is_admin(update.effective_user.id): return
+    if not await is_admin(update.effective_user.id):
+        return
     chat_id = int(query.data.split(":")[1])
     context.user_data["edit_chat_id"] = chat_id
     await query.edit_message_text(f"✏️ Изменить аукцион в группе <code>{chat_id}</code>", reply_markup=build_edit_game_keyboard(chat_id), parse_mode="HTML")
@@ -180,10 +198,13 @@ async def edit_timer_value(update: Update, context):
     new_timer = int(text)
     chat_id = context.user_data["edit_chat_id"]
     await db.update_game_settings(chat_id, timer=new_timer)
-    mins = new_timer // 60; secs = new_timer % 60
+    mins = new_timer // 60
+    secs = new_timer % 60
     duration_str = f"{mins} мин" if secs == 0 else f"{mins} мин {secs} сек"
-    try: await context.bot.send_message(chat_id, f"⏱ <b>Время изменено!</b> Новая длительность: {duration_str}.", parse_mode="HTML")
-    except: pass
+    try:
+        await context.bot.send_message(chat_id, f"⏱ <b>Время изменено!</b> Новая длительность: {duration_str}.", parse_mode="HTML")
+    except Exception:
+        pass
     await update.message.reply_text(f"✅ Время изменено на {new_timer} сек.")
     return ConversationHandler.END
 
@@ -191,10 +212,12 @@ async def edit_stars_value(update: Update, context):
     text = update.message.text.strip()
     try:
         stars = [int(s.strip()) for s in text.split(",") if s.strip()]
-        if not stars or any(not (1 <= s <= 999) for s in stars): raise ValueError
+        if not stars or any(not (1 <= s <= 999) for s in stars):
+            raise ValueError
         stars = sorted(set(stars))
     except:
-        await update.message.reply_text("❌ Введите положительные числа: 1,2,3"); return EDIT_STARS
+        await update.message.reply_text("❌ Введите положительные числа: 1,2,3")
+        return EDIT_STARS
     chat_id = context.user_data["edit_chat_id"]
     await db.update_game_settings(chat_id, stars=stars)
     await update.message.reply_text(f"✅ Звёзды изменены на {', '.join(map(str, stars))}.")
@@ -223,7 +246,9 @@ async def ask_chance(update: Update, context) -> int:
 
 async def ask_prize(update: Update, context) -> int:
     prize = update.message.text.strip()
-    if not prize: await update.message.reply_text("❌ Приз не может быть пустым."); return ASK_PRIZE
+    if not prize:
+        await update.message.reply_text("❌ Приз не может быть пустым.")
+        return ASK_PRIZE
     context.user_data["draw_prize"] = prize
     await update.message.reply_text("👥 Введите количество победителей (по умолчанию 1):")
     return ASK_WINNERS
@@ -231,14 +256,17 @@ async def ask_prize(update: Update, context) -> int:
 async def ask_winners(update: Update, context) -> int:
     text = update.message.text.strip()
     if not text.isdigit() or int(text) < 1:
-        await update.message.reply_text("❌ Введите целое число больше 0."); return ASK_WINNERS
+        await update.message.reply_text("❌ Введите целое число больше 0.")
+        return ASK_WINNERS
     context.user_data["draw_winners"] = int(text)
     await update.message.reply_text("⏱ Введите длительность игры в минутах (0 = без ограничения):")
     return ASK_LUCKY_DURATION
 
 async def ask_lucky_duration(update: Update, context) -> int:
     text = update.message.text.strip()
-    if not text.isdigit(): await update.message.reply_text("❌ Введите число минут."); return ASK_LUCKY_DURATION
+    if not text.isdigit():
+        await update.message.reply_text("❌ Введите число минут.")
+        return ASK_LUCKY_DURATION
     duration = int(text)
     context.user_data["draw_duration"] = duration
     await update.message.reply_text("🖼 Отправьте фото для объявления (или /skip):")
@@ -252,7 +280,8 @@ async def ask_photo(update: Update, context) -> int:
     elif update.message.text and update.message.text.lower() == "/skip":
         context.user_data["draw_photo"] = None
     else:
-        await update.message.reply_text("❌ Отправьте фото или /skip."); return ASK_PHOTO
+        await update.message.reply_text("❌ Отправьте фото или /skip.")
+        return ASK_PHOTO
     await update.message.reply_text("🎁 Введите gift_id подарка (числовой ID) или /skip:")
     return ASK_GIFT_ID
 
@@ -276,11 +305,15 @@ async def ask_gift_id(update: Update, context) -> int:
         )
         await db.set_lucky_draw_timer(chat_id, now, job_name)
     caption = f"🎰 <b>Lucky Draw!</b>\n🎁 Приз: {html.escape(prize)}\n🎲 Шанс: {chance}%\n👥 Победителей: {winners}"
-    if duration > 0: caption += f"\n⏱ Длительность: {duration} мин"
+    if duration > 0:
+        caption += f"\n⏱ Длительность: {duration} мин"
     try:
-        if photo_file_id: await context.bot.send_photo(chat_id, photo_file_id, caption=caption, parse_mode="HTML")
-        else: await context.bot.send_message(chat_id, caption, parse_mode="HTML")
-    except Exception as e: logger.error(f"Announce fail: {e}")
+        if photo_file_id:
+            await context.bot.send_photo(chat_id, photo_file_id, caption=caption, parse_mode="HTML")
+        else:
+            await context.bot.send_message(chat_id, caption, parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"Announce fail: {e}")
     return ConversationHandler.END
 
 # ── Guess Number ──
@@ -288,32 +321,44 @@ async def guess_mode_cb(update: Update, context) -> int:
     query = update.callback_query; await query.answer()
     chat_id = int(query.data.split(":")[1])
     context.user_data["guess_chat_id"] = chat_id
-    await query.edit_message_text("🎯 Введите минимальное число:"); return GUESS_MIN
+    await query.edit_message_text("🎯 Введите минимальное число:")
+    return GUESS_MIN
 
 async def guess_min(update: Update, context) -> int:
     text = update.message.text.strip()
-    if not text.isdigit(): await update.message.reply_text("❌ Введите число."); return GUESS_MIN
+    if not text.isdigit():
+        await update.message.reply_text("❌ Введите число.")
+        return GUESS_MIN
     context.user_data["guess_min"] = int(text)
-    await update.message.reply_text("🎯 Введите максимальное число:"); return GUESS_MAX
+    await update.message.reply_text("🎯 Введите максимальное число:")
+    return GUESS_MAX
 
 async def guess_max(update: Update, context) -> int:
     text = update.message.text.strip()
     if not text.isdigit() or int(text) <= context.user_data["guess_min"]:
-        await update.message.reply_text("❌ Число должно быть больше минимального."); return GUESS_MAX
+        await update.message.reply_text("❌ Число должно быть больше минимального.")
+        return GUESS_MAX
     context.user_data["guess_max"] = int(text)
-    await update.message.reply_text("⏱ Введите длительность игры в минутах (0 = без ограничения):"); return GUESS_DURATION
+    await update.message.reply_text("⏱ Введите длительность игры в минутах (0 = без ограничения):")
+    return GUESS_DURATION
 
 async def guess_duration(update: Update, context) -> int:
     text = update.message.text.strip()
-    if not text.isdigit(): await update.message.reply_text("❌ Введите число минут."); return GUESS_DURATION
+    if not text.isdigit():
+        await update.message.reply_text("❌ Введите число минут.")
+        return GUESS_DURATION
     context.user_data["guess_duration"] = int(text)
-    await update.message.reply_text("🎁 Введите описание приза:"); return GUESS_PRIZE
+    await update.message.reply_text("🎁 Введите описание приза:")
+    return GUESS_PRIZE
 
 async def guess_prize(update: Update, context) -> int:
     prize = update.message.text.strip()
-    if not prize: await update.message.reply_text("❌ Приз не может быть пустым."); return GUESS_PRIZE
+    if not prize:
+        await update.message.reply_text("❌ Приз не может быть пустым.")
+        return GUESS_PRIZE
     context.user_data["guess_prize"] = prize
-    await update.message.reply_text("🖼 Отправьте фото для объявления (или /skip):"); return GUESS_PHOTO
+    await update.message.reply_text("🖼 Отправьте фото для объявления (или /skip):")
+    return GUESS_PHOTO
 
 async def guess_photo(update: Update, context) -> int:
     if update.message.photo:
@@ -323,7 +368,8 @@ async def guess_photo(update: Update, context) -> int:
     elif update.message.text and update.message.text.lower() == "/skip":
         context.user_data["guess_photo"] = None
     else:
-        await update.message.reply_text("❌ Отправьте фото или /skip."); return GUESS_PHOTO
+        await update.message.reply_text("❌ Отправьте фото или /skip.")
+        return GUESS_PHOTO
     chat_id = context.user_data["guess_chat_id"]
     min_num = context.user_data["guess_min"]
     max_num = context.user_data["guess_max"]
@@ -334,8 +380,10 @@ async def guess_photo(update: Update, context) -> int:
     await db.create_guess_number(chat_id, min_num, max_num, secret, prize, duration, photo_file_id)
     await update.message.reply_text(f"✅ Игра «Угадай число» создана в {chat_id}!\nЗагаданное число: <b>{secret}</b>", parse_mode="HTML")
     for admin_id in Config.ADMIN_IDS:
-        try: await context.bot.send_message(admin_id, f"🔐 Загаданное число в группе <code>{chat_id}</code>: <b>{secret}</b>", parse_mode="HTML")
-        except: pass
+        try:
+            await context.bot.send_message(admin_id, f"🔐 Загаданное число в группе <code>{chat_id}</code>: <b>{secret}</b>", parse_mode="HTML")
+        except Exception:
+            pass
     if duration > 0:
         now = time.time()
         job_name = f"guess_end_{chat_id}_{int(now)}"
@@ -345,11 +393,15 @@ async def guess_photo(update: Update, context) -> int:
         )
         await db.set_guess_number_timer(chat_id, now, job_name)
     caption = f"🎯 <b>Угадай число!</b>\nДиапазон: {min_num}–{max_num}\n🎁 Приз: {html.escape(prize)}"
-    if duration > 0: caption += f"\n⏱ Время: {duration} мин"
+    if duration > 0:
+        caption += f"\n⏱ Время: {duration} мин"
     try:
-        if photo_file_id: await context.bot.send_photo(chat_id, photo_file_id, caption=caption, parse_mode="HTML")
-        else: await context.bot.send_message(chat_id, caption, parse_mode="HTML")
-    except Exception as e: logger.error(f"Announce fail: {e}")
+        if photo_file_id:
+            await context.bot.send_photo(chat_id, photo_file_id, caption=caption, parse_mode="HTML")
+        else:
+            await context.bot.send_message(chat_id, caption, parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"Announce fail: {e}")
     return ConversationHandler.END
 
 # ── Dice Game ──
@@ -364,80 +416,118 @@ async def dice_emoji_chosen(update: Update, context):
     query = update.callback_query; await query.answer()
     emoji = query.data.split("_", 2)[2]
     context.user_data["dice_emoji"] = emoji
-    if emoji == "🎰": max_val = 64; hint = " (64 = 777)"
-    elif emoji in ("🎲","🎯"): max_val = 6; hint = ""
-    else: max_val = 5; hint = ""
+    if emoji == "🎰":
+        max_val = 64
+        hint = " (64 = 777)"
+    elif emoji in ("🎲", "🎯"):
+        max_val = 6
+        hint = ""
+    else:
+        max_val = 5
+        hint = ""
     await query.edit_message_text(f"🎯 Введите выигрышное значение (от 1 до {max_val}){hint}:")
     return DICE_VALUE
 
 async def dice_value_entered(update: Update, context) -> int:
     text = update.message.text.strip()
     emoji = context.user_data["dice_emoji"]
-    if emoji == "🎰": max_val = 64
-    elif emoji in ("🎲","🎯"): max_val = 6
-    else: max_val = 5
+    if emoji == "🎰":
+        max_val = 64
+    elif emoji in ("🎲", "🎯"):
+        max_val = 6
+    else:
+        max_val = 5
     if not text.isdigit() or not (1 <= int(text) <= max_val):
-        await update.message.reply_text(f"❌ Введите число от 1 до {max_val}:"); return DICE_VALUE
+        await update.message.reply_text(f"❌ Введите число от 1 до {max_val}:")
+        return DICE_VALUE
     context.user_data["dice_value"] = int(text)
-    await update.message.reply_text("🎁 Введите описание приза:"); return DICE_PRIZE
+    await update.message.reply_text("🎁 Введите описание приза:")
+    return DICE_PRIZE
 
 async def dice_prize_entered(update: Update, context) -> int:
     prize = update.message.text.strip()
-    if not prize: await update.message.reply_text("❌ Приз не может быть пустым."); return DICE_PRIZE
+    if not prize:
+        await update.message.reply_text("❌ Приз не может быть пустым.")
+        return DICE_PRIZE
     chat_id = context.user_data["dice_chat_id"]
     emoji = context.user_data["dice_emoji"]
     value = context.user_data["dice_value"]
     await db.create_dice_game(chat_id, emoji, value, prize)
     await update.message.reply_text(f"✅ Игра с {emoji} на {value} создана в группе {chat_id}!")
-    try: await context.bot.send_message(chat_id, f"🎲 <b>Игра начата!</b> Отправьте {emoji}, чтобы попробовать выбить {value} и выиграть: {html.escape(prize)}.", parse_mode="HTML")
-    except: pass
+    try:
+        await context.bot.send_message(chat_id, f"🎲 <b>Игра начата!</b> Отправьте {emoji}, чтобы попробовать выбить {value} и выиграть: {html.escape(prize)}.", parse_mode="HTML")
+    except Exception:
+        pass
     return ConversationHandler.END
 
 # ── Stop handlers ──
 async def stop_game_cb(update: Update, context):
     query = update.callback_query; await query.answer()
-    if not await is_admin(update.effective_user.id): return
+    if not await is_admin(update.effective_user.id):
+        return
     chat_id = int(query.data.split(":")[1])
     for j in context.job_queue.jobs():
-        if j.name and (j.name.startswith(f"auction_{chat_id}") or j.name.startswith(f"countdown_{chat_id}")): j.schedule_removal()
+        if j.name and (j.name.startswith(f"auction_{chat_id}") or j.name.startswith(f"countdown_{chat_id}")):
+            j.schedule_removal()
     await db.deactivate_game(chat_id)
     await query.edit_message_text(f"🛑 Ивент остановлен в {chat_id}.")
-    try: await context.bot.send_message(chat_id, "🛑 Ивент остановлен администратором."); except: pass
+    try:
+        await context.bot.send_message(chat_id, "🛑 Ивент остановлен администратором.")
+    except Exception:
+        pass
 
 async def stop_lucky_cb(update: Update, context):
     query = update.callback_query; await query.answer()
-    if not await is_admin(update.effective_user.id): return
+    if not await is_admin(update.effective_user.id):
+        return
     chat_id = int(query.data.split(":")[1])
     game = await db.get_active_lucky_draw(chat_id)
     if game and game.get('job_name'):
         for j in context.job_queue.jobs():
-            if j.name == game['job_name']: j.schedule_removal()
+            if j.name == game['job_name']:
+                j.schedule_removal()
     await db.deactivate_lucky_draw(chat_id)
     await query.edit_message_text(f"🎰 Lucky Draw остановлен в {chat_id}.")
-    try: await context.bot.send_message(chat_id, "🎰 Lucky Draw остановлен администратором."); except: pass
+    try:
+        await context.bot.send_message(chat_id, "🎰 Lucky Draw остановлен администратором.")
+    except Exception:
+        pass
 
 async def stop_dice_cb(update: Update, context):
     query = update.callback_query; await query.answer()
-    if not await is_admin(update.effective_user.id): return
+    if not await is_admin(update.effective_user.id):
+        return
     chat_id = int(query.data.split(":")[1])
     await db.deactivate_dice_game(chat_id)
     await query.edit_message_text(f"🎲 Dice Game остановлена в {chat_id}.")
-    try: await context.bot.send_message(chat_id, "🎲 Игра остановлена администратором."); except: pass
+    try:
+        await context.bot.send_message(chat_id, "🎲 Игра остановлена администратором.")
+    except Exception:
+        pass
 
 async def stop_guess_cb(update: Update, context):
     query = update.callback_query; await query.answer()
-    if not await is_admin(update.effective_user.id): return
+    if not await is_admin(update.effective_user.id):
+        return
     chat_id = int(query.data.split(":")[1])
     await guess_mgr._end_guess_game(context, chat_id)
     await query.edit_message_text(f"🎯 Guess Number остановлена в {chat_id}.")
-    try: await context.bot.send_message(chat_id, "🎯 Игра остановлена администратором."); except: pass
+    try:
+        await context.bot.send_message(chat_id, "🎯 Игра остановлена администратором.")
+    except Exception:
+        pass
 
 async def stats_game_cb(update: Update, context):
     query = update.callback_query; await query.answer()
     chat_id = int(query.data.split(":")[1])
     game = await db.get_active_game(chat_id)
-    if not game: await query.edit_message_text("Аукцион не активен."); return
-    await query.edit_message_text(f"📊 <b>Статистика аукциона в {chat_id}</b>\nЛидер: {game.get('leader_name','Нет')}\nСтавок: {game.get('bid_count',0)}\nЗвёзд: {game.get('total_stars',0)}", parse_mode="HTML")
+    if not game:
+        await query.edit_message_text("Аукцион не активен.")
+        return
+    await query.edit_message_text(
+        f"📊 <b>Статистика аукциона в {chat_id}</b>\nЛидер: {game.get('leader_name','Нет')}\nСтавок: {game.get('bid_count',0)}\nЗвёзд: {game.get('total_stars',0)}",
+        parse_mode="HTML"
+    )
 
 async def back_to_mode_cb(update: Update, context):
     query = update.callback_query; await query.answer()
@@ -457,7 +547,6 @@ async def cancel_conv(update: Update, context) -> int:
     return ConversationHandler.END
 
 def register_admin_handlers(app):
-    # Conversations
     auction_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(auction_custom_cb, pattern=r"^auction_custom:")],
         states={
@@ -510,12 +599,14 @@ def register_admin_handlers(app):
     edit_timer_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(edit_timer_cb, pattern=r"^edit_timer:")],
         states={EDIT_TIMER: [MessageHandler(filters.TEXT & ~filters.COMMAND, edit_timer_value)]},
-        fallbacks=[CommandHandler("cancel", cancel_conv)], per_user=True
+        fallbacks=[CommandHandler("cancel", cancel_conv)],
+        per_user=True
     )
     edit_stars_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(edit_stars_cb, pattern=r"^edit_stars:")],
         states={EDIT_STARS: [MessageHandler(filters.TEXT & ~filters.COMMAND, edit_stars_value)]},
-        fallbacks=[CommandHandler("cancel", cancel_conv)], per_user=True
+        fallbacks=[CommandHandler("cancel", cancel_conv)],
+        per_user=True
     )
 
     app.add_handler(CommandHandler("start", start_cmd))
