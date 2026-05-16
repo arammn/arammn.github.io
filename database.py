@@ -23,7 +23,6 @@ class Database:
         logger.info("Database initialized successfully")
 
     async def _create_tables(self):
-        # Groups
         await self._db.execute("""
             CREATE TABLE IF NOT EXISTS groups (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +32,6 @@ class Database:
                 added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        # Auction
         await self._db.execute("""
             CREATE TABLE IF NOT EXISTS games (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,13 +62,12 @@ class Database:
                 ended_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        # Lucky Draws (extended)
         await self._db.execute("""
             CREATE TABLE IF NOT EXISTS lucky_draws (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 chat_id INTEGER UNIQUE NOT NULL,
                 active BOOLEAN DEFAULT 0,
-                chance INTEGER NOT NULL,
+                chance REAL NOT NULL,
                 prize TEXT DEFAULT '',
                 photo_file_id TEXT DEFAULT NULL,
                 gift_id TEXT DEFAULT NULL,
@@ -83,7 +80,6 @@ class Database:
                 FOREIGN KEY (chat_id) REFERENCES groups(chat_id)
             )
         """)
-        # Dice Games
         await self._db.execute("""
             CREATE TABLE IF NOT EXISTS dice_games (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,7 +92,6 @@ class Database:
                 FOREIGN KEY (chat_id) REFERENCES groups(chat_id)
             )
         """)
-        # Guess Number Games
         await self._db.execute("""
             CREATE TABLE IF NOT EXISTS guess_number_games (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -114,7 +109,6 @@ class Database:
                 FOREIGN KEY (chat_id) REFERENCES groups(chat_id)
             )
         """)
-        # Ignored users
         await self._db.execute("""
             CREATE TABLE IF NOT EXISTS ignored_users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,21 +119,20 @@ class Database:
             )
         """)
         # Add missing columns safely
-        for col, type_ in [('description','TEXT DEFAULT ""'),('bid_count','INTEGER DEFAULT 0'),('total_stars','INTEGER DEFAULT 0'),
-                           ('photo_file_id','TEXT DEFAULT NULL'),('gift_id','TEXT DEFAULT NULL'),
-                           ('winners_count','INTEGER DEFAULT 1'),('winner_ids','TEXT DEFAULT "[]"'),('duration_minutes','INTEGER DEFAULT 0'),
-                           ('timer_start','REAL DEFAULT NULL'),('job_name','TEXT DEFAULT NULL')]:
-            try: await self._db.execute(f"ALTER TABLE lucky_draws ADD COLUMN {col} {type_}")
-            except: pass
         for col, type_ in [('description','TEXT DEFAULT ""'),('bid_count','INTEGER DEFAULT 0'),('total_stars','INTEGER DEFAULT 0')]:
             try: await self._db.execute(f"ALTER TABLE games ADD COLUMN {col} {type_}")
             except: pass
         for col, type_ in [('description','TEXT DEFAULT ""')]:
             try: await self._db.execute(f"ALTER TABLE auction_history ADD COLUMN {col} {type_}")
             except: pass
+        for col, type_ in [('photo_file_id','TEXT DEFAULT NULL'),('gift_id','TEXT DEFAULT NULL'),
+                           ('winners_count','INTEGER DEFAULT 1'),('winner_ids','TEXT DEFAULT "[]"'),
+                           ('duration_minutes','INTEGER DEFAULT 0'),('timer_start','REAL DEFAULT NULL'),('job_name','TEXT DEFAULT NULL')]:
+            try: await self._db.execute(f"ALTER TABLE lucky_draws ADD COLUMN {col} {type_}")
+            except: pass
+        # If column chance was INTEGER, we accept that SQLite will store REAL anyway. No need to alter.
         await self._db.commit()
 
-    # ── Groups ──
     async def upsert_group(self, chat_id: int, title: str, chat_type: str):
         await self._db.execute(
             """INSERT INTO groups (chat_id, title, type) VALUES (?,?,?) ON CONFLICT(chat_id) DO UPDATE SET title=excluded.title, type=excluded.type""",
@@ -147,11 +140,11 @@ class Database:
         )
         await self._db.commit()
 
-    async def get_all_groups(self) -> List[Dict]:
+    async def get_all_groups(self) -> List[Dict[str, Any]]:
         cur = await self._db.execute("SELECT chat_id, title, type, added_at FROM groups ORDER BY added_at DESC")
         return [dict(r) for r in await cur.fetchall()]
 
-    # ── Auction ──
+    # ---------- Auction ----------
     async def create_active_game(self, chat_id, timer, stars, description=""):
         stars_json = json.dumps(stars)
         await self._db.execute(
@@ -181,14 +174,14 @@ class Database:
         await self._db.execute("UPDATE games SET active=0,current_leader_id=NULL,leader_name=NULL,timer_start=NULL,job_name=NULL WHERE chat_id=?", (chat_id,))
         await self._db.commit()
 
-    async def get_active_game(self, chat_id) -> Optional[Dict]:
+    async def get_active_game(self, chat_id) -> Optional[Dict[str, Any]]:
         cur = await self._db.execute("SELECT * FROM games WHERE chat_id=? AND active=1", (chat_id,))
         row = await cur.fetchone()
         if not row: return None
         game = dict(row); game["allowed_stars"] = json.loads(game["allowed_stars"])
         return game
 
-    async def get_all_active_games(self) -> List[Dict]:
+    async def get_all_active_games(self) -> List[Dict[str, Any]]:
         cur = await self._db.execute("SELECT * FROM games WHERE active=1")
         return [dict(r) for r in await cur.fetchall()]
 
@@ -207,8 +200,8 @@ class Database:
         c = await self.get_active_game_counts()
         return (c['auctions']+c['lucky_draws']+c['dice']+c['guess_number'])>0
 
-    # ── Lucky Draw (extended) ──
-    async def create_lucky_draw(self, chat_id, chance, prize, photo_file_id=None, gift_id=None, winners_count=1, duration_minutes=0):
+    # ---------- Lucky Draw ----------
+    async def create_lucky_draw(self, chat_id, chance: float, prize, photo_file_id=None, gift_id=None, winners_count=1, duration_minutes=0):
         await self._db.execute(
             """INSERT INTO lucky_draws (chat_id,active,chance,prize,photo_file_id,gift_id,winners_count,winner_ids,duration_minutes,timer_start,job_name)
                VALUES (?,1,?,?,?,?,?,'[]',?,NULL,NULL) ON CONFLICT(chat_id) DO UPDATE SET active=1,chance=excluded.chance,prize=excluded.prize,
@@ -218,12 +211,11 @@ class Database:
         await self._db.commit()
 
     async def update_lucky_draw_winner(self, chat_id, user_id):
-        """Add winner to list, decrement remaining. Returns (new_remaining, was_new)"""
         game = await self.get_active_lucky_draw(chat_id)
         if not game: return (0, False)
         winner_ids = json.loads(game['winner_ids'])
         if user_id in winner_ids:
-            return (game['winners_count']-len(winner_ids), False)  # already won, no change
+            return (game['winners_count']-len(winner_ids), False)
         winner_ids.append(user_id)
         new_remaining = game['winners_count'] - len(winner_ids)
         await self._db.execute("UPDATE lucky_draws SET winner_ids=? WHERE chat_id=? AND active=1", (json.dumps(winner_ids), chat_id))
@@ -234,7 +226,7 @@ class Database:
         await self._db.execute("UPDATE lucky_draws SET timer_start=?, job_name=? WHERE chat_id=? AND active=1", (timer_start, job_name, chat_id))
         await self._db.commit()
 
-    async def get_active_lucky_draw(self, chat_id) -> Optional[Dict]:
+    async def get_active_lucky_draw(self, chat_id) -> Optional[Dict[str, Any]]:
         cur = await self._db.execute("SELECT * FROM lucky_draws WHERE chat_id=? AND active=1", (chat_id,))
         row = await cur.fetchone()
         return dict(row) if row else None
@@ -243,17 +235,17 @@ class Database:
         await self._db.execute("UPDATE lucky_draws SET active=0 WHERE chat_id=?", (chat_id,))
         await self._db.commit()
 
-    async def get_all_active_lucky_draws(self) -> List[Dict]:
+    async def get_all_active_lucky_draws(self) -> List[Dict[str, Any]]:
         cur = await self._db.execute("SELECT * FROM lucky_draws WHERE active=1")
         return [dict(r) for r in await cur.fetchall()]
 
-    # ── Dice Game ──
+    # ---------- Dice Game ----------
     async def create_dice_game(self, chat_id, emoji, winning_value, prize):
         await self._db.execute("INSERT INTO dice_games (chat_id,active,dice_emoji,winning_value,prize) VALUES (?,1,?,?,?) ON CONFLICT(chat_id) DO UPDATE SET active=1,dice_emoji=excluded.dice_emoji,winning_value=excluded.winning_value,prize=excluded.prize",
                                (chat_id, emoji, winning_value, prize))
         await self._db.commit()
 
-    async def get_active_dice_game(self, chat_id) -> Optional[Dict]:
+    async def get_active_dice_game(self, chat_id) -> Optional[Dict[str, Any]]:
         cur = await self._db.execute("SELECT * FROM dice_games WHERE chat_id=? AND active=1", (chat_id,))
         row = await cur.fetchone()
         return dict(row) if row else None
@@ -262,11 +254,11 @@ class Database:
         await self._db.execute("UPDATE dice_games SET active=0 WHERE chat_id=?", (chat_id,))
         await self._db.commit()
 
-    async def get_all_active_dice_games(self) -> List[Dict]:
+    async def get_all_active_dice_games(self) -> List[Dict[str, Any]]:
         cur = await self._db.execute("SELECT * FROM dice_games WHERE active=1")
         return [dict(r) for r in await cur.fetchall()]
 
-    # ── Guess Number Game ──
+    # ---------- Guess Number ----------
     async def create_guess_number(self, chat_id, min_num, max_num, secret, prize, duration_minutes, photo_file_id=None):
         await self._db.execute("""INSERT INTO guess_number_games (chat_id,active,min_num,max_num,secret_number,prize,duration_minutes,photo_file_id,timer_start,job_name)
                                   VALUES (?,1,?,?,?,?,?,?,NULL,NULL) ON CONFLICT(chat_id) DO UPDATE SET active=1,min_num=excluded.min_num,
@@ -279,7 +271,7 @@ class Database:
         await self._db.execute("UPDATE guess_number_games SET timer_start=?, job_name=? WHERE chat_id=? AND active=1", (timer_start, job_name, chat_id))
         await self._db.commit()
 
-    async def get_active_guess_number(self, chat_id) -> Optional[Dict]:
+    async def get_active_guess_number(self, chat_id) -> Optional[Dict[str, Any]]:
         cur = await self._db.execute("SELECT * FROM guess_number_games WHERE chat_id=? AND active=1", (chat_id,))
         row = await cur.fetchone()
         return dict(row) if row else None
@@ -288,16 +280,14 @@ class Database:
         await self._db.execute("UPDATE guess_number_games SET active=0 WHERE chat_id=?", (chat_id,))
         await self._db.commit()
 
-    async def get_all_active_guess_numbers(self) -> List[Dict]:
+    async def get_all_active_guess_numbers(self) -> List[Dict[str, Any]]:
         cur = await self._db.execute("SELECT * FROM guess_number_games WHERE active=1")
         return [dict(r) for r in await cur.fetchall()]
 
-    # ── Ignore list ──
+    # ---------- Ignore list ----------
     async def add_ignored_user(self, chat_id, user_id):
-        try:
-            await self._db.execute("INSERT OR IGNORE INTO ignored_users (chat_id,user_id) VALUES (?,?)", (chat_id, user_id))
-            await self._db.commit()
-        except: pass
+        await self._db.execute("INSERT OR IGNORE INTO ignored_users (chat_id,user_id) VALUES (?,?)", (chat_id, user_id))
+        await self._db.commit()
 
     async def remove_ignored_user(self, chat_id, user_id):
         await self._db.execute("DELETE FROM ignored_users WHERE chat_id=? AND user_id=?", (chat_id, user_id))
