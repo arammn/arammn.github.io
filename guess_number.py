@@ -24,7 +24,6 @@ class GuessNumberManager:
         if guess < game['min_num'] or guess > game['max_num']: return
         if guess != game['secret_number']: return
 
-        # Winner!
         prize = html.escape(game['prize'])
         if user.username: winner = f"@{user.username}"
         else: winner = html.escape(user.full_name)
@@ -36,14 +35,12 @@ class GuessNumberManager:
         try: await context.bot.pin_chat_message(chat_id, win_msg.message_id, disable_notification=False)
         except: pass
 
-        # Notify admins
         for admin_id in Config.ADMIN_IDS:
             dm_text = f"🎯 <b>Guess Win!</b>\nГруппа: <code>{chat_id}</code>\nПобедитель: <b>{winner}</b>\nПриз: {prize}\nID: <code>{user.id}</code>"
             if user.username: dm_text += f"\nЮзернейм: @{user.username}"
             try: await context.bot.send_message(admin_id, dm_text, parse_mode="HTML")
             except: pass
 
-        # End game
         await self._end_guess_game(context, chat_id)
 
     async def _end_guess_game(self, context, chat_id):
