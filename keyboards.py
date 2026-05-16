@@ -14,6 +14,7 @@ def build_game_mode_keyboard(chat_id: int):
         [InlineKeyboardButton("💰 Ивент (аукцион)", callback_data=f"auction_mode:{chat_id}")],
         [InlineKeyboardButton("🎰 Lucky Draw", callback_data=f"lucky_draw_mode:{chat_id}")],
         [InlineKeyboardButton("🎲 Dice Game", callback_data=f"dice_mode:{chat_id}")],
+        [InlineKeyboardButton("🎯 Guess Number", callback_data=f"guess_mode:{chat_id}")],
         [InlineKeyboardButton("❌ Отмена", callback_data="cancel_action")]
     ])
 
@@ -24,7 +25,7 @@ def build_auction_options_keyboard(chat_id: int):
         [InlineKeyboardButton("🔙 Назад", callback_data=f"back_to_mode:{chat_id}")]
     ])
 
-def build_active_games_keyboard(games, draws, dice_games):
+def build_active_games_keyboard(games, draws, dice, guess_nums):
     buttons = []
     for g in games:
         leader = g.get('leader_name', 'Нет ставок')
@@ -33,8 +34,10 @@ def build_active_games_keyboard(games, draws, dice_games):
         buttons.append([InlineKeyboardButton(f"📊 Статистика {g['chat_id']}", callback_data=f"stats_game:{g['chat_id']}")])
     for d in draws:
         buttons.append([InlineKeyboardButton(f"🎰 Lucky Draw {d['chat_id']} – {d['prize']}", callback_data=f"stop_lucky:{d['chat_id']}")])
-    for dg in dice_games:
+    for dg in dice:
         buttons.append([InlineKeyboardButton(f"🎲 Dice {dg['chat_id']} – {dg['prize']}", callback_data=f"stop_dice:{dg['chat_id']}")])
+    for gn in guess_nums:
+        buttons.append([InlineKeyboardButton(f"🎯 Guess {gn['chat_id']} – {gn['prize']}", callback_data=f"stop_guess:{gn['chat_id']}")])
     buttons.append([InlineKeyboardButton("Закрыть", callback_data="cancel_action")])
     return InlineKeyboardMarkup(buttons)
 
