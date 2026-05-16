@@ -1,4 +1,4 @@
-"""Lucky Draw – multi‑winner, timer, gift, ignore."""
+"""Lucky Draw – float chance, multi‑winner, timer, gift, ignore."""
 import random, logging, time, html, json
 from config import Config
 from database import Database
@@ -22,8 +22,8 @@ class LuckyDrawManager:
         if await self._is_admin(chat_id, user.id, context):
             return
 
-        chance = draw['chance']
-        roll = random.randint(1, 100)
+        chance = draw['chance']   # now float
+        roll = random.uniform(0, 100)   # 0 to 100
         if roll > chance:
             return
 
@@ -36,7 +36,7 @@ class LuckyDrawManager:
         # Update winners list
         remaining, is_new = await self.db.update_lucky_draw_winner(chat_id, user.id)
         if not is_new:
-            # already won, ignore (or notify)
+            # already won
             return
 
         # Send gift if configured
@@ -65,10 +65,9 @@ class LuckyDrawManager:
             try: await context.bot.send_message(admin_id, dm_text, parse_mode="HTML")
             except: pass
 
-        # Check if all winners chosen -> end game
+        # If no winners left, end the game
         if remaining <= 0:
             await self._end_lucky_draw(context, chat_id, f"Все победители выбраны!")
-        # else game continues; timer may still be running
 
     async def _send_gift(self, context, user_id, gift_id, prize):
         params = {"user_id": user_id, "gift_id": gift_id, "text": f"Вы выиграли: {prize}", "text_parse_mode": "HTML"}
@@ -76,10 +75,8 @@ class LuckyDrawManager:
         logger.info(f"sendGift result: {result}")
 
     async def _end_lucky_draw(self, context, chat_id, reason: str = ""):
-        """Called by timer or when winners exhausted."""
         game = await self.db.get_active_lucky_draw(chat_id)
         if not game: return
-        # Cancel timer job
         if game.get('job_name'):
             for j in context.job_queue.jobs():
                 if j.name == game['job_name']: j.schedule_removal()
